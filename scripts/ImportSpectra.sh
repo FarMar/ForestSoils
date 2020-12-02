@@ -20,6 +20,9 @@
 # 2) Copy the first new .csv and rename it `all_spectra.csv` - NOT DONE
 # 3) Concatenate all the other files, dropping the wavenumbers - NOT DONE
 
+#### Part 0 - Set-up
+
+mkdir -p ../data/working
 
 #### Part 1 - Build the loop
 

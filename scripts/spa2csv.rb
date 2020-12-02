@@ -79,7 +79,7 @@ end
 
 #Writing a .csv file
 File.open(ARGV[0].to_s + '.csv', "w+") do |f|
-     f.puts("#Converted with spa2csv tool")
+     f.puts("Wavenumber, Abs")
      f.puts(spectrum_full_string_array)
     #f.puts(spectrum_xaxis)
 end
