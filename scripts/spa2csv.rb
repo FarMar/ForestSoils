@@ -23,6 +23,12 @@
 #Written by ne0dim
 #While using the code please keep the comments and the author's name
 
+#Edits by mark.farrell@csiro.au
+#1) These comments
+#2) Made meaningful but fixed column headers - DONE
+#3) Made Abs column header dynamic to filename - IN PROGRESS
+
+
 #Opening datafile in binary mode provided as 0 argument
 if ARGV[0] != nil
     spectrum_spa_binary_string = IO.binread(ARGV[0])
@@ -77,9 +83,10 @@ for i in 0..spectrum_float.length-1
     spectrum_full_string_array[i] = spectrum_xaxis[i].to_s + "," + spectrum_float[i].to_s
 end
 
+header = "Wavenumber, "+ARGV[0] #Rad Suchecki helped with this one
 #Writing a .csv file
 File.open(ARGV[0].to_s + '.csv', "w+") do |f|
-     f.puts("Wavenumber, Abs")
+     f.puts(header)
      f.puts(spectrum_full_string_array)
     #f.puts(spectrum_xaxis)
 end
