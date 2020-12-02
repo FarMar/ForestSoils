@@ -26,5 +26,9 @@
 
 for f in $(find ../data/raw/MIR -name '*.spa')
 do
-	echo $f
+	ruby spa2csv.rb $f
 done
+
+# This does loop through and appears to write all the real samples as .csv
+# files of the format *.spa.csv. Next step is to add file name to top of y
+# column. This will then make a concatenation easier. 
