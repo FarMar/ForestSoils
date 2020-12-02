@@ -19,3 +19,12 @@
 # 1) Loop the script through a directory/file list of *.spa files - IN PROGRESS
 # 2) Copy the first new .csv and rename it `all_spectra.csv` - NOT DONE
 # 3) Concatenate all the other files, dropping the wavenumbers - NOT DONE
+
+
+#### Part 1 - Build the loop
+
+
+for f in $(find ../data/raw/MIR -name '*.spa')
+do
+	echo $f
+done
