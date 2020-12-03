@@ -17,7 +17,7 @@
 #This is a simple app to convert Thermo SPA file into plain text format (csv)
 #To use this app just provide it with SPA file as an argument
 #Like so: ruby spa2csv spectrum.spa
-#It will create text file containing your data in text format 
+#It will create text file containing your data in text format
 #named like this: spectrum.spa.csv.
 #Hope this app will be of some usage
 #Written by ne0dim
@@ -83,7 +83,7 @@ for i in 0..spectrum_float.length-1
     spectrum_full_string_array[i] = spectrum_xaxis[i].to_s + "," + spectrum_float[i].to_s
 end
 
-header = "Wavenumber, "+ARGV[0].sub(/^.*\//, '') #Rad Suchecki helped with this one 
+header = "Wavenumber,"+ARGV[0].sub(/^.*\//, '') #Rad Suchecki helped with this one
 #Writing a .csv file
 File.open(ARGV[0].to_s + '.csv', "w+") do |f|
      f.puts(header)
