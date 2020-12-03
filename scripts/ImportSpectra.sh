@@ -2,8 +2,10 @@
 
 #***************************************************************#
 #   Converts folders of Thermo Omnic *.spa files to one *.csv   #
-#																#
-#	Written by mark.farrell@csiro.au							#
+#                                                               #
+#   Written by mark.farrell@csiro.au                            #
+#                                                               #
+#   With help from Rad Suchecki                                 #
 #***************************************************************#
 
 
@@ -35,6 +37,14 @@ do
 	ruby spa2csv.rb $f
 done
 
-#### Part 2
-csvjoin -c1 $(find ../data/raw/MIR -name '*.csv') > ../data/working/MIRspec.csv
+#### Part 2 - concatenate the outputs into one .csv
+read -p "Waiting 10 secs for files to write...." -t 10
+echo "Merging spectral files now ...."
+
+csvjoin -c1 $(find ../data/raw/MIR -name '*.tmp') > ../data/working/MIRspec.csv
+
+#### Part 3 - clean up
+read -p "Waiting 30 secs for merged file to write...." -t 30
+echo "Cleaning temporary files...."
+rm $(find ../data/raw/MIR -name '*.tmp')
 

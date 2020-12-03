@@ -85,7 +85,7 @@ end
 
 header = "Wavenumber,"+ARGV[0].sub(/^.*\//, '') #Rad Suchecki helped with this one
 #Writing a .csv file
-File.open(ARGV[0].to_s + '.csv', "w+") do |f|
+File.open(ARGV[0].to_s + '.tmp', "w+") do |f|
      f.puts(header)
      f.puts(spectrum_full_string_array)
     #f.puts(spectrum_xaxis)
