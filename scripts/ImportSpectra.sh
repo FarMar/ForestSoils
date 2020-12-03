@@ -15,23 +15,26 @@
 # It assumes there is a directory called ../data/working to put them in
 # With time I will try to improve it to automate directory checking etc
 
+## REQUIRES:
+# Ruby
+# Python
+# CSVKit
+
 # Steps as follows
-# 1) Loop the script through a directory/file list of *.spa files - IN PROGRESS
-# 2) Copy the first new .csv and rename it `all_spectra.csv` - NOT DONE
-# 3) Concatenate all the other files, dropping the wavenumbers - NOT DONE
+# 1) Loop the script through a directory/file list of *.spa files - DONE
+# 2) Concatenate all files, dropping the wavenumbers - DONE
+# 3) Clean up
 
 #### Part 0 - Set-up
-
 mkdir -p ../data/working
+touch ../data/working/MIRspec.csv
 
 #### Part 1 - Build the loop
-
-
 for f in $(find ../data/raw/MIR -name '*.spa')
 do
 	ruby spa2csv.rb $f
 done
 
-# This does loop through and appears to write all the real samples as .csv
-# files of the format *.spa.csv. Next step is to add file name to top of y
-# column. This will then make a concatenation easier. 
+#### Part 2
+csvjoin -c1 $(find ../data/raw/MIR -name '*.csv') > ../data/working/MIRspec.csv
+

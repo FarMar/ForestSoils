@@ -25,8 +25,8 @@
 
 #Edits by mark.farrell@csiro.au
 #1) These comments
-#2) Made meaningful but fixed column headers - DONE
-#3) Made Abs column header dynamic to filename - IN PROGRESS
+#2) Made meaningful but fixed column headers - SUPERCEDED
+#3) Made Abs column header dynamic to filename - DONE
 
 
 #Opening datafile in binary mode provided as 0 argument
