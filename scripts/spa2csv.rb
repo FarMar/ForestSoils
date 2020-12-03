@@ -90,3 +90,12 @@ File.open(ARGV[0].to_s + '.csv', "w+") do |f|
      f.puts(spectrum_full_string_array)
     #f.puts(spectrum_xaxis)
 end
+
+# RegEx explanation from Rad for the above:
+# Outer /    / - tells ruby it is a regex
+#	^ "starts with"
+#	. "any char"
+#	* "0  more" (could have used + instead for 1 or more) - of any char
+#	now the tricky part.
+#	We want to go up to a /but have to escape it with preceding \ otherwise we'd delimit the end of the whole regex.
+#	Conveniently, but not obviously, this is greedy, so it does not stop at the first, but the last /
