@@ -83,7 +83,7 @@ for i in 0..spectrum_float.length-1
     spectrum_full_string_array[i] = spectrum_xaxis[i].to_s + "," + spectrum_float[i].to_s
 end
 
-header = "Wavenumber, "+ARGV[0] #Rad Suchecki helped with this one
+header = "Wavenumber, "+ARGV[0].sub(/^.*\//, '') #Rad Suchecki helped with this one 
 #Writing a .csv file
 File.open(ARGV[0].to_s + '.csv', "w+") do |f|
      f.puts(header)
