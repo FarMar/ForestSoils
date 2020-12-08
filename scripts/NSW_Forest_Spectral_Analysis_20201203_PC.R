@@ -9,7 +9,7 @@
 ## Start date: 20201202
 ## End date: 20201203
 ## TTD
-# Check the baseline correction function
+# Improve the current baseline function which give extra first raw without baselining 
 # additional spectral pre-processing functions
 ## ###################################################################################################################################
 
@@ -31,7 +31,7 @@ library(hydroGOF)
 ### Preparation of data sets
 
 ### Set working directory
-setwd('Z:\\reference\\Team\\Senani\\NSW_Forest')
+setwd('V:\\_Projects\\2019 Projects\\2019_Farrell_NSW_Forestry\\MIR\\Analysis')
 getwd()
 dir()
 
@@ -88,25 +88,64 @@ matplot(x = waves_s, y = t(spec_a_d_6000_600), ylim=c(0,3), type = "l", lty = 1,
         ylab = "Absorbance", col = rep(palette(), each = 3))
 
 ### Baseline correction
-### Senani: Still need to check this function 
-spec_a_d_6000_600 <- as.matrix(spec_a_d_6000_600)
-spec_a_bc <- baseline(spec_a_d_6000_600)
-str(spec_a_bc)
-spec_a_bc_d <- getCorrected(spec_a_bc)
-spec_a_bc_d <- setNames(spec_a_bc_d,names(spec_a_d_6000_600))
+## Updated on 20201208 with the new function to correct for baseline
+#spec_a_d_6000_600 <- as.matrix(spec_a_d_6000_600)
+#spec_a_bc <- baseline(spec_a_d_6000_600)
+#str(spec_a_bc)
+#spec_a_bc_d <- getCorrected(spec_a_bc)
+#spec_a_bc_d <- setNames(spec_a_bc_d,names(spec_a_d_6000_600))
 
-spec_a_bc_d <- as.data.frame(spec_a_bc_d)
+#spec_a_bc_d <- as.data.frame(spec_a_bc_d)
 
-matplot(x = waves_s, y = t(spec_a_bc_d), ylim=c(-0.1,1.5), type = "l", lty = 1,
-        main = "Absorbance", xlab = "Wavelength (nm)",
+#matplot(x = waves_s, y = t(spec_a_bc_d), ylim=c(-0.1,1.5), type = "l", lty = 1,
+#        main = "Absorbance", xlab = "Wavelength (nm)",
+#        ylab = "Absorbance", col = rep(palette(), each = 3))
+
+#spectra <- spec_a_d_6000_600
+### New function modified from the library(spftir)
+### Mark please check this function 
+spoffs2 <- function (spectra) 
+{
+        if (missing(spectra)) {
+                stop("No spectral data provided")
+        }
+        if (spectra[1, 1] < spectra[1, dim(spectra)[2]]) {
+                spectra <- t(apply(spectra, 1, rev))
+        }
+        s <- matrix(nrow = dim(spectra)[1], ncol = dim(spectra)[2])
+        for (i in 1:dim(spectra)[1]) {
+                s[i, ] <- spectra[i, ] - min(spectra[i, ])
+        }
+        output <- rbind(spectra[1, ], s)
+        output <- output[-1,]
+}
+
+spec_a_bc_d <- spoffs2(spec_a_d_6000_600)
+dim(spec_a_bc_d)
+
+### Due to error in the function need to delete the first raw 
+#spec_a_bc_d <- spec_a_bc_d[-1,] 
+#dim(spec_a_bc_d)
+
+
+## Wave numbers are in reverse order
+waves_ss <- seq(600, 6000, by= 3.8569)
+
+
+matplot(x = waves_ss, y = t(spec_a_bc_d), ylim=c(0,3), type = "l", lty = 1,
+        main = "Absorbance - baseline corrected", xlab = "Wavelength (nm)",
         ylab = "Absorbance", col = rep(palette(), each = 3))
+
+### QA & QC for the function
+#write.csv(spec_a_bc_d, 'QA_QC_Baseline_correction_20201208.csv')
 
 
 ### Merge the Spectral ID and merge 
 UniqueID <- spec_s$UniqueID
 
+spec_a_bc_d <- as.data.frame(spec_a_bc_d)
 spec_a_bc_d_6000_600_f <- cbind(UniqueID, spec_a_bc_d)
-#names(spec_a_bc_d_6000_600_f)
+names(spec_a_bc_d_6000_600_f)
 
 
 ### Select soil property and merge with spectral dataset
