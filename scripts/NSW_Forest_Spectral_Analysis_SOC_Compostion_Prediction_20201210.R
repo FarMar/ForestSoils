@@ -56,7 +56,7 @@ dim(spec_s)
 
 #remove the 'X' from headers (MIR wave numbers)
 colnames(spec_s) <- sub("X","",colnames(spec_s))  
-
+head(spec_s)
 
 ### Quick plot to see the spectra
 waves <- seq(7999.28, 401.1211, by= -3.8569)
@@ -66,22 +66,22 @@ matplot(x = waves, y = t(spec_s[,2:1972]), ylim=c(0,3.5), type = "l", lty = 1,
         main = "Raw spectra", xlab = "Wavelength (nm)",
         ylab = "Absorbance", col = rep(palette(), each = 3))
 
-### Convert absorbance to reflectance 
+### Convert absorbance to reflectance - Not needed for Thermo Nicolet files
 ##spec_a <- log(1/spec_s[,2:1972])
 
-spec_a <- spec_s[,2:1972]
+spec_a <- spec_s[,2:1972] # Just so rest of code runs easily
 
 
-matplot(x = waves, y = t(spec_a), ylim=c(0,3.5), type = "l", lty = 1,
-        main = "Absorbance", xlab = "Wavelength (nm)",
-        ylab = "Absorbance", col = rep(palette(), each = 3))
+#matplot(x = waves, y = t(spec_a), ylim=c(0,3.5), type = "l", lty = 1,
+#        main = "Absorbance", xlab = "Wavelength (nm)",
+#        ylab = "Absorbance", col = rep(palette(), each = 3))
 
 
-colnames(spec_a) <- waves_s
+#colnames(spec_a) <- waves_s
 
-matplot(x = waves_s, y = t(spec_a_d_6000_600), ylim=c(0,3), type = "l", lty = 1,
-        main = "Absorbance - 600 to 6000", xlab = "Wavelength (nm)",
-        ylab = "Absorbance", col = rep(palette(), each = 3))
+#matplot(x = waves_s, y = t(spec_a_d_6000_600), ylim=c(0,3), type = "l", lty = 1,
+#        main = "Absorbance - 600 to 6000", xlab = "Wavelength (nm)",
+#        ylab = "Absorbance", col = rep(palette(), each = 3))
 
 
 
@@ -175,6 +175,8 @@ matplot(x = waves_ss, y = t(spec_a_bc_d), ylim=c(0,3), type = "l", lty = 1,
 # All R object models are inside the folder called 
 # V:\_Projects\2019 Projects\2019_Farrell_NSW_Forestry\MIR\Analysis\SCaRP_models_20201210
 # Copy those objects to your working folder and before you run the analysis i.e. V:\\_Projects\\2019 Projects\\2019_Farrell_NSW_Forestry\\MIR\\Analysis
+
+### When working on Mac, the *.rds files are in the `data/working` folder. Ensure the .gitignore inclides *.rds before committing and pushing
 
 # load the relevant model - in this example its for OC
 dir()
