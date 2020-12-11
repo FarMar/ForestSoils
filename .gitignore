@@ -37,3 +37,12 @@ vignettes/*.pdf
 
 # R Environment Variables
 .Renviron
+
+# Unwanted data files
+*.rds
+*.xlsx
+*.xls
+*.unsb
+
+# Apple crap
+.DS_Store
