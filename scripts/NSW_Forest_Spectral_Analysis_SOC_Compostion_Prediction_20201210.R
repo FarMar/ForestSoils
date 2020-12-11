@@ -178,9 +178,9 @@ matplot(x = waves_ss, y = t(spec_a_bc_d), ylim=c(0,3), type = "l", lty = 1,
 
 ### When working on Mac, the *.rds files are in the `data/working` folder. Ensure the .gitignore inclides *.rds before committing and pushing
 
-# load the relevant model - in this example its for OC
+# load the relevant model - in this example its for ROC
 dir()
-model <- readRDS("ROC_model_20201210.rds")
+model <- readRDS("data/working/ROC_model_20201210.rds")
 
 
 
