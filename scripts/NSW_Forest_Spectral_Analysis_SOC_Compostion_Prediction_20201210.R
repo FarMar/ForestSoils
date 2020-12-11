@@ -30,19 +30,19 @@ library(hyperSpec)
 ### Preparation of data sets
 
 ### Set working directory
-setwd('V:\\_Projects\\2019 Projects\\2019_Farrell_NSW_Forestry\\MIR\\Analysis')
+#setwd('V:\\_Projects\\2019 Projects\\2019_Farrell_NSW_Forestry\\MIR\\Analysis')
 getwd()
 dir()
 
 
 ### Read analytical data
-data <- read.csv('MasterFieldDataFC_NSW - Data.csv')
+data <- read.csv("data/working/MasterFieldDataFC_NSW - Data.csv")
 head(data)
 dim(data)
 summary(data$Clay)
 
 ### Read spectral data
-spec <- read.csv('MasterFieldDataFC_NSW - MIR_raw.csv')
+spec <- read.csv("data/working/MasterFieldDataFC_NSW - MIR_raw.csv")
 head(spec)
 dim(spec)
 names(spec)
