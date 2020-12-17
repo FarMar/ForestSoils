@@ -9,3 +9,23 @@
 
 #### Set working directory ####
 setwd("/Users/markfarrell/OneDrive - CSIRO/Data/ForestSoils")
+
+
+#### Packages ####
+install.packages("PerformanceAnalytics")
+install.packages("corrplot")
+
+
+library(tidyverse)
+library(janitor)
+library(PerformanceAnalytics)
+library(corrplot)
+
+
+#### Import data ####
+dat <- read_csv("data/working/MasterFieldDataFC_NSW - Data.csv")
+spec(dat)
+
+mir <- read_csv("data/working/MasterFieldDataFC_NSW - MIR_raw.csv")
+cols_condense(mir)
+dim(mir)
