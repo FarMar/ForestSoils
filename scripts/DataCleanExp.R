@@ -29,3 +29,5 @@ spec(dat)
 mir <- read_csv("data/working/MasterFieldDataFC_NSW - MIR_raw.csv")
 cols_condense(mir)
 dim(mir)
+
+#### Set factors ####
