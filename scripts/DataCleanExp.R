@@ -31,3 +31,15 @@ cols_condense(mir)
 dim(mir)
 
 #### Set factors ####
+dat <- dat %>% 
+  mutate_at(vars(CombID, UniqueID, PrelimID, Transect, Plot, Inun), 
+            list(~ factor(.))
+  )
+str(dat)
+
+mir <- mir %>% 
+  mutate_at(vars(CombID, UniqueID, PrelimID, Transect, Plot, Inun), 
+            list(~ factor(.))
+  )
+
+
