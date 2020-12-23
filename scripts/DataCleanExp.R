@@ -42,4 +42,8 @@ mir <- mir %>%
             list(~ factor(.))
   )
 
-
+#### Initial facet plot for proteolysis ####
+ggplot(data = dat, aes(x = Date, y = Proteolysis, colour = Plot)) +
+  geom_point() +
+  geom_line() +
+  facet_grid(Transect ~ .)
