@@ -14,12 +14,14 @@ setwd("/Users/markfarrell/OneDrive - CSIRO/Data/ForestSoils")
 #### Packages ####
 install.packages("PerformanceAnalytics")
 install.packages("corrplot")
+install.packages("RColorBrewer")
 
 
 library(tidyverse)
 library(janitor)
 library(PerformanceAnalytics)
 library(corrplot)
+library(RColorBrewer)
 
 
 #### Import data ####
@@ -56,10 +58,10 @@ facetlabs <- c("Transect 100",
 names(facetlabs) <- c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
 
 ggplot(data = dat, aes(x = Date, y = Proteolysis, colour = Plot)) +
-  geom_point(aes(size = Wet)) +
+  geom_point(aes(size = Moisture)) +
   geom_line() +
-  scale_colour_manual(values = c("blue", "green", "orange", "brown")) +
-  scale_size(range = c(0, 5)) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "BrBG")) + # (values = c("blue", "dark green", "brown", "dark brown")) +
+  scale_size(range = c(0, 6)) +
     facet_wrap( ~ Transect, ncol = 2, scales='free', labeller = labeller(
     Transect = facetlabs
   )) +
@@ -69,3 +71,63 @@ ggplot(data = dat, aes(x = Date, y = Proteolysis, colour = Plot)) +
         axis.title.x=element_blank()) 
   
   
+#### Looping ####
+# limit columns to just the factors required for the plot and the response variables from all five time points
+trim <- dat %>% select(
+  UniqueID,
+  Date,
+  Transect,
+  Plot,
+  NDVI,
+  Wet,
+  Moisture,
+  pHw,
+  pHc,
+  EC,
+  TotOC,
+  TotN,
+  d13C,
+  d15N,
+  MTOC,
+  POC,
+  HOC,
+  ROC,
+  DOC,
+  DTN,
+  FumDOC,
+  FumDTN,
+  NO3,
+  NH4,
+  FAA,
+  WHC,
+  Proteolysis,
+  AAMin_k1,
+  AAMin_k2,
+  AAMin_a,
+  AAMin_b
+)
+
+#Names for response and explanatory vars
+response = names(trim)[5:31]
+expl = names(trim)[1:7]
+
+response = set_names(response)
+response
+
+expl = set_names(expl)
+expl
+
+exp.fun = function(x, y, z1, z2, z3) {
+  ggplot(data = trim, aes(x = .data[[x]], y = .data[[y]], colour = .data[[z2]])) +
+    geom_point(aes(size = .data[[z3]])) +
+    geom_line() +
+    scale_colour_manual(values = brewer.pal(n = 4, name = "BrBG")) + 
+    scale_size(range = c(0, 6)) +
+    facet_wrap( ~ .data[[z1]], ncol = 2, scales='free') + # labeller won't work with the .data for some reason
+    #scale_y_continuous(limits=c(0,16)) +
+    theme_classic() +
+    theme(strip.background = element_blank(),
+          axis.title.x=element_blank()) 
+ }
+
+exp.fun("Date", "Proteolysis", "Transect", "Plot", "Moisture")
