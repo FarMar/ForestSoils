@@ -43,10 +43,29 @@ mir <- mir %>%
   )
 
 #### Initial facet plot for proteolysis ####
-ggplot(data = dat, aes(x = Date, y = Proteolysis, colour = Plot, alpha = NDVI)) +
-  geom_point() +
+facetlabs <- c("Transect 100",
+               "Transect 101",
+               "Transect 102",
+               "Transect 103",
+               "Transect 104",
+               "Transect 105",
+               "Transect 106",
+               "Transect 107",
+               "Transect 108",
+               "Transect 109")
+names(facetlabs) <- c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+
+ggplot(data = dat, aes(x = Date, y = Proteolysis, colour = Plot)) +
+  geom_point(aes(size = Wet)) +
   geom_line() +
-  scale_colour_manual(values = c("blue", "green", "orange", "red")) +
-  scale_alpha(range = c(0.2, 1)) +
-  facet_wrap( ~ Transect, ncol = 1) 
+  scale_colour_manual(values = c("blue", "green", "orange", "brown")) +
+  scale_size(range = c(0, 5)) +
+    facet_wrap( ~ Transect, ncol = 2, scales='free', labeller = labeller(
+    Transect = facetlabs
+  )) +
+  #scale_y_continuous(limits=c(0,16)) +
+  theme_classic() +
+  theme(strip.background = element_blank(),
+        axis.title.x=element_blank()) 
+  
   
