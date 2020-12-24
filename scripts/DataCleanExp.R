@@ -43,7 +43,10 @@ mir <- mir %>%
   )
 
 #### Initial facet plot for proteolysis ####
-ggplot(data = dat, aes(x = Date, y = Proteolysis, colour = Plot)) +
+ggplot(data = dat, aes(x = Date, y = Proteolysis, colour = Plot, alpha = NDVI)) +
   geom_point() +
   geom_line() +
-  facet_grid(Transect ~ .)
+  scale_colour_manual(values = c("blue", "green", "orange", "red")) +
+  scale_alpha(range = c(0.2, 1)) +
+  facet_wrap( ~ Transect, ncol = 1) 
+  
