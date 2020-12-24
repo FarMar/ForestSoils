@@ -99,7 +99,6 @@ trim <- dat %>% select(
   NO3,
   NH4,
   FAA,
-  WHC,
   Proteolysis,
   AAMin_k1,
   AAMin_k2,
@@ -108,7 +107,8 @@ trim <- dat %>% select(
 )
 
 #Names for response and explanatory vars
-response = names(trim)[5:31]
+#https://aosmith.rbind.io/2018/08/20/automating-exploratory-plots/
+response = names(trim)[5:30]
 expl = names(trim)[1:7]
 
 response = set_names(response)
@@ -131,3 +131,10 @@ exp.fun = function(x, y, z1, z2, z3) {
  }
 
 exp.fun("Date", "Proteolysis", "Transect", "Plot", "Moisture")
+
+exp_plots = map(response, ~exp.fun("Date", .x, "Transect", "Plot", "Moisture") )
+
+pdf("outputs/all_scatterplots.pdf")
+exp_plots
+dev.off()
+
