@@ -34,15 +34,11 @@ dim(mir)
 
 #### Set factors ####
 dat <- dat %>% 
-  mutate_at(vars(CombID, UniqueID, PrelimID, Transect, Plot, Inun), 
-            list(~ factor(.))
-  )
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun), as.factor))
 str(dat)
 
 mir <- mir %>% 
-  mutate_at(vars(CombID, UniqueID, PrelimID, Transect, Plot, Inun), 
-            list(~ factor(.))
-  )
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun), as.factor))
 
 #### Initial facet plot for proteolysis ####
 facetlabs <- c("Transect 100",
