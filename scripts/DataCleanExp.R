@@ -40,6 +40,30 @@ str(dat)
 mir <- mir %>% 
   mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun), as.factor))
 
+
+#### Final data cleaning ####
+# DON
+dat <- dat %>% 
+  mutate(DON2 = DTN - NH4 - NO3,
+         DON = case_when(
+           DON2 >= 0 ~ DON2,
+           TRUE ~ 0
+         )) %>% 
+  select(-DON2)
+
+#MBC, MBN
+dat <- dat %>% 
+  mutate(MBC = ((FumDOC - DOC) / .45),
+         MBN = ((FumDTN - DTN) / .5)) %>% 
+  select(-c(FumDOC, FumDTN))
+
+
+
+
+
+
+
+
 #### Initial facet plot for proteolysis ####
 facetlabs <- c("Transect 100",
                "Transect 101",
@@ -80,14 +104,7 @@ trim <- dat %>% select(
   pHw,
   pHc,
   EC,
-  TotOC,
-  TotN,
-  d13C,
-  d15N,
-  MTOC,
-  POC,
-  HOC,
-  ROC,
+  AvailP,
   DOC,
   DTN,
   FumDOC,
@@ -104,7 +121,7 @@ trim <- dat %>% select(
 
 #Names for response and explanatory vars
 #https://aosmith.rbind.io/2018/08/20/automating-exploratory-plots/
-response = names(trim)[5:30]
+response = names(trim)[5:23]
 expl = names(trim)[1:7]
 
 response = set_names(response)
