@@ -84,6 +84,30 @@ dat <- dat %>%
 dat <- dat %>%
   mutate(BD0_30 = (CoreMass * (1 - bdm)) / CoreVol)
 
+## Air dry moisture correction for all variables derived from dry soil
+adm <- c("CEC", "AvailP", "ExCa", "ExMg", "ExNa",  "ExK", "Al", "As", "B", "Ca", "Cd", "Co", "Cr", "Cu", "Fe", "K", "Mg", "Mn", "Mo", "Na", "Ni", "P", "Pb", "S", 
+         "Sb", "Se", "Zn", "TotOC", "TotN", "MTOC", "POC", "HOC", "ROC", "WHC", "Proteolysis")
+
+dat_adm <- dat %>% 
+  mutate(across(adm, ~ . * MoisFAD))
+
+write_csv(dat_adm, "data/processed/ChemAll_adm.csv")
+
+## Stocks conversion - to 30 cm, per sq m - mostly either mg or g
+StockVars <- c("CEC", "AvailP", "ExCa", "ExMg", "ExNa",  "ExK", "Al", "As", "B", "Ca", "Cd", "Co", "Cr", "Cu", "Fe", "K", "Mg", "Mn", "Mo", "Na", "Ni", "P", "Pb", "S", 
+               "Sb", "Se", "Zn", "TotOC", "TotN", "MTOC", "POC", "HOC", "ROC", "WHC", "Proteolysis", "DOC", "DTN", "NO3", "NH4", "FAA", "DON", "MBC", "MBN")
+
+stocks <- dat_adm %>% 
+  mutate(across(StockVars, ~ . * BD0_30 * ((30 * 100 * 100) / 1000)))
+
+write_csv(stocks, "data/processed/ChemAll_adm_stocks.csv")
+
+#### Summarise over sampling (mean, SEM) ####
+# Aim is to have a final df with the dynamic variables presented as March-19, mean, SEM alongside those only measured in March-19 e.g., CEC
+
+
+
+
 
 #### Initial facet plot for proteolysis ####
 facetlabs <- c("Transect 100",
