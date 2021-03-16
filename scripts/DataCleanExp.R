@@ -57,11 +57,32 @@ dat <- dat %>%
          MBN = ((FumDTN - DTN) / .5)) %>% 
   select(-c(FumDOC, FumDTN))
 
+#Microbial yield
+dat <- dat %>% 
+  mutate(MicY = AAMin_b / (AAMin_a + AAMin_b))
 
+#C:N
+dat <- dat %>% 
+  mutate(CN = TotOC / TotN)
 
+#MicC:N
+dat <- dat %>% 
+  mutate(MicCN = MBC / MBN)
 
+#Vulnerability
+dat <- dat %>% 
+  mutate(Vuln = POC / (HOC + ROC))
 
+#BD g cm-3 
+bdmoist <- dat %>% # Need to do this as cores were only taken at 1st sampling so only moisture from that sampling relevant
+  slice(1:40) %>% 
+  pull(Moisture)
+bdmoist = rep(bdmoist, times = 5)
+dat <- dat %>% 
+  mutate(bdm = bdmoist)
 
+dat <- dat %>%
+  mutate(BD0_30 = (CoreMass * (1 - bdm)) / CoreVol)
 
 
 #### Initial facet plot for proteolysis ####
