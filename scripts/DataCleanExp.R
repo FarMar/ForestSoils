@@ -89,9 +89,19 @@ adm <- c("CEC", "AvailP", "ExCa", "ExMg", "ExNa",  "ExK", "Al", "As", "B", "Ca",
          "Sb", "Se", "Zn", "TotOC", "TotN", "MTOC", "POC", "HOC", "ROC", "WHC", "Proteolysis")
 
 dat_adm <- dat %>% 
-  mutate(across(adm, ~ . * MoisFAD))
+  mutate(across(all_of(adm), ~ . * MoisFAD))
 
 write_csv(dat_adm, "data/processed/ChemAll_adm.csv")
+
+
+
+
+
+
+
+
+
+
 
 ## Stocks conversion - to 30 cm, per sq m - mostly either mg or g
 StockVars <- c("CEC", "AvailP", "ExCa", "ExMg", "ExNa",  "ExK", "Al", "As", "B", "Ca", "Cd", "Co", "Cr", "Cu", "Fe", "K", "Mg", "Mn", "Mo", "Na", "Ni", "P", "Pb", "S", 
