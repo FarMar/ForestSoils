@@ -94,28 +94,34 @@ dat_adm <- dat %>%
 write_csv(dat_adm, "data/processed/ChemAll_adm.csv")
 
 
+## Perform outlier removal in Excel using conditional formatting and sort by variable, then re-import and re-apply factors
 
+OL_cor <- read_csv("data/processed/ChemAll_adm_OLrem.csv")
 
-
-
-
-
-
+OL_cor <- OL_cor %>% 
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun), as.factor))
+str(OL_cor)
 
 
 ## Stocks conversion - to 30 cm, per sq m - mostly either mg or g
 StockVars <- c("CEC", "AvailP", "ExCa", "ExMg", "ExNa",  "ExK", "Al", "As", "B", "Ca", "Cd", "Co", "Cr", "Cu", "Fe", "K", "Mg", "Mn", "Mo", "Na", "Ni", "P", "Pb", "S", 
                "Sb", "Se", "Zn", "TotOC", "TotN", "MTOC", "POC", "HOC", "ROC", "WHC", "Proteolysis", "DOC", "DTN", "NO3", "NH4", "FAA", "DON", "MBC", "MBN")
 
-stocks <- dat_adm %>% 
-  mutate(across(StockVars, ~ . * BD0_30 * ((30 * 100 * 100) / 1000)))
+stocks <- OL_cor %>% 
+  mutate(across(all_of(StockVars), ~ . * BD0_30 * ((30 * 100 * 100) / 1000)))
 
 write_csv(stocks, "data/processed/ChemAll_adm_stocks.csv")
 
 #### Summarise over sampling (mean, SEM) ####
 # Aim is to have a final df with the dynamic variables presented as March-19, mean, SEM alongside those only measured in March-19 e.g., CEC
 
+tempvars <- c("NDVI",	"VH",	"VV",	"Wet", "Moisture", "pHw",	"pHc",	"EC", "AvailP", "TotOC",	"TotN",	"d13C",	"d15N",	"MTOC",	
+              "POC",	"HOC",	"ROC",	"DOC",	"DTN",	"NO3",	"NH4",	"FAA", "Proteolysis",	"AAMin_k1",	"AAMin_k2",	"AAMin_a",	
+              "AAMin_b",	"DON",	"MBC",	"MBN",	"MicY",	"CN",	"MicCN",	"Vuln")
 
+summary <- OL_cor %>% 
+  group_by(PrelimID) %>% 
+  summarise(across(all_of(tempvars), list(~ mean(.x, na.rm = TRUE), ~)))
 
 
 
