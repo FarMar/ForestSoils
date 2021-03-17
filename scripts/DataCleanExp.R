@@ -15,14 +15,14 @@ setwd("/Users/markfarrell/OneDrive - CSIRO/Data/ForestSoils")
 install.packages("PerformanceAnalytics")
 install.packages("corrplot")
 install.packages("RColorBrewer")
-
+install.packages("plotrix")
 
 library(tidyverse)
 library(janitor)
 library(PerformanceAnalytics)
 library(corrplot)
 library(RColorBrewer)
-
+library(plotrix)
 
 #### Import data ####
 dat <- read_csv("data/working/MasterFieldDataFC_NSW - Data.csv")
@@ -121,9 +121,13 @@ tempvars <- c("NDVI",	"VH",	"VV",	"Wet", "Moisture", "pHw",	"pHc",	"EC", "AvailP
 
 summary <- OL_cor %>% 
   group_by(PrelimID) %>% 
-  summarise(across(all_of(tempvars), list(~ mean(.x, na.rm = TRUE), ~)))
+  summarise(across(all_of(tempvars), 
+                   list(mean = ~ mean(.x, na.rm = TRUE), sem = ~ std.error(.x, na.rm = TRUE)))) # {plotrix} is required for `std.error`
 
+t1 <- OL_cor %>% 
+  slice(1:40)
 
+t1_summary <- left_join(t1, summary, by = "PrelimID")
 
 #### Initial facet plot for proteolysis ####
 facetlabs <- c("Transect 100",
