@@ -23,16 +23,23 @@ library(PerformanceAnalytics)
 library(corrplot)
 library(RColorBrewer)
 library(plotrix)
+library(lubridate)
+library(ggpmisc)
 
 #### Import data ####
+OL_cor <- read_csv("data/processed/ChemAll_adm_OLrem.csv")
+OL_cor <- OL_cor %>% 
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun), as.factor)) %>% 
+  mutate(Date = dmy(Date))
+str(OL_cor)
 
 
-
-
-
-
-
-
+t1_summary <- read_csv("data/processed/summary.csv")
+t1_summary <- t1_summary %>% 
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun), as.factor))
+str(t1_summary)
+t1_summary <- t1_summary %>% 
+  relocate(where(is.character))
 
 #### Initial facet plot for proteolysis ####
 facetlabs <- c("Transect 100",
@@ -47,7 +54,7 @@ facetlabs <- c("Transect 100",
                "Transect 109")
 names(facetlabs) <- c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
 
-ggplot(data = dat, aes(x = Date, y = Proteolysis, colour = Plot)) +
+ggplot(data = OL_cor, aes(x = Date, y = Proteolysis, colour = Plot)) +
   geom_point(aes(size = Moisture)) +
   geom_line() +
   scale_colour_manual(values = brewer.pal(n = 4, name = "BrBG")) + # (values = c("blue", "dark green", "brown", "dark brown")) +
@@ -63,36 +70,15 @@ ggplot(data = dat, aes(x = Date, y = Proteolysis, colour = Plot)) +
 
 #### Looping ####
 # limit columns to just the factors required for the plot and the response variables from all five time points
-trim <- dat %>% select(
-  UniqueID,
-  Date,
-  Transect,
-  Plot,
-  NDVI,
-  Wet,
-  Moisture,
-  pHw,
-  pHc,
-  EC,
-  AvailP,
-  DOC,
-  DTN,
-  FumDOC,
-  FumDTN,
-  NO3,
-  NH4,
-  FAA,
-  Proteolysis,
-  AAMin_k1,
-  AAMin_k2,
-  AAMin_a,
-  AAMin_b
-)
+trim <- OL_cor %>% select(UniqueID, Date, Transect, Plot, NDVI, VH,	VV,	Wet, Moisture, pHw,	pHc,	EC, AvailP, 
+                       DOC,	DTN,	NO3,	NH4,	FAA, Proteolysis,	AAMin_k1,	AAMin_k2,	AAMin_a, AAMin_b,	DON,	MBC,	
+                       MBN,	MicY,	MicCN)
+
 
 #Names for response and explanatory vars
 #https://aosmith.rbind.io/2018/08/20/automating-exploratory-plots/
-response = names(trim)[5:23]
-expl = names(trim)[1:7]
+response = names(trim)[5:28]
+expl = names(trim)[1:9]
 
 response = set_names(response)
 response
@@ -120,4 +106,53 @@ exp_plots = map(response, ~exp.fun("Date", .x, "Transect", "Plot", "Moisture") )
 pdf("outputs/all_scatterplots.pdf")
 exp_plots
 dev.off()
+
+
+#### summary plots ####
+
+my.formula <- y ~ x
+
+ggplot(data = t1_summary) +
+  geom_point(aes(x = RTHeight, y = Proteolysis_mean, colour = Transect), size = 4) +
+  stat_smooth(aes(x = RTHeight, y = Proteolysis_mean, colour = Transect), method = lm, se = FALSE, formula = my.formula, linetype = "longdash") +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  stat_smooth(aes(x = RTHeight, y = Proteolysis_mean), method = lm, formula = my.formula, colour = "black", size = 2) +
+  stat_poly_eq(formula = my.formula, 
+               aes(x = RTHeight, y = Proteolysis_mean, label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+               parse = TRUE) +
+  theme_classic() +
+  theme(strip.background = element_blank())
+
+
+response2 = names(t1_summary)[15:164]
+expl2 = names(t1_summary)[1:14]
+
+response2 = set_names(response2)
+response2
+
+expl2 = set_names(expl2)
+expl2
+
+exp.fun2 = function(x, y, z1) {
+  ggplot(data = t1_summary) +
+    geom_point(aes(x = .data[[x]], y = .data[[y]], colour = .data[[z1]]), size = 4) +
+    stat_smooth(aes(x = .data[[x]], y = .data[[y]], colour = .data[[z1]]), method = lm, formula = my.formula, se = FALSE, linetype = "longdash") +
+    scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+    stat_smooth(aes(x = .data[[x]], y = .data[[y]]), method = lm, formula = my.formula, colour = "black", size = 2) +
+    stat_poly_eq(formula = my.formula, 
+                 aes(x = .data[[x]], y = .data[[y]], label = paste(..eq.label.., ..rr.label.., sep = "~~~")), 
+                 parse = TRUE) +
+    theme_classic() +
+    theme(strip.background = element_blank())
+}
+
+exp.fun2("RTHeight", "Proteolysis_mean", "Transect")
+
+exp_plots2 = map(response2, ~exp.fun2("RTHeight", .x, "Transect") )
+
+
+pdf("outputs/all_summaries.pdf")
+exp_plots2
+dev.off()
+
 
