@@ -1,0 +1,123 @@
+#####################################################################################################
+
+#### Forest soils data exploration                                                ###################
+
+#### mark.farrell@csiro.au        +61 8 8303 8664         18/03/2021 ################################
+
+#####################################################################################################
+
+
+#### Set working directory ####
+setwd("/Users/markfarrell/OneDrive - CSIRO/Data/ForestSoils")
+
+
+#### Packages ####
+install.packages("PerformanceAnalytics")
+install.packages("corrplot")
+install.packages("RColorBrewer")
+install.packages("plotrix")
+
+library(tidyverse)
+library(janitor)
+library(PerformanceAnalytics)
+library(corrplot)
+library(RColorBrewer)
+library(plotrix)
+
+#### Import data ####
+
+
+
+
+
+
+
+
+
+#### Initial facet plot for proteolysis ####
+facetlabs <- c("Transect 100",
+               "Transect 101",
+               "Transect 102",
+               "Transect 103",
+               "Transect 104",
+               "Transect 105",
+               "Transect 106",
+               "Transect 107",
+               "Transect 108",
+               "Transect 109")
+names(facetlabs) <- c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
+
+ggplot(data = dat, aes(x = Date, y = Proteolysis, colour = Plot)) +
+  geom_point(aes(size = Moisture)) +
+  geom_line() +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "BrBG")) + # (values = c("blue", "dark green", "brown", "dark brown")) +
+  scale_size(range = c(0, 6)) +
+  facet_wrap( ~ Transect, ncol = 2, scales='free', labeller = labeller(
+    Transect = facetlabs
+  )) +
+  #scale_y_continuous(limits=c(0,16)) +
+  theme_classic() +
+  theme(strip.background = element_blank(),
+        axis.title.x=element_blank()) 
+
+
+#### Looping ####
+# limit columns to just the factors required for the plot and the response variables from all five time points
+trim <- dat %>% select(
+  UniqueID,
+  Date,
+  Transect,
+  Plot,
+  NDVI,
+  Wet,
+  Moisture,
+  pHw,
+  pHc,
+  EC,
+  AvailP,
+  DOC,
+  DTN,
+  FumDOC,
+  FumDTN,
+  NO3,
+  NH4,
+  FAA,
+  Proteolysis,
+  AAMin_k1,
+  AAMin_k2,
+  AAMin_a,
+  AAMin_b
+)
+
+#Names for response and explanatory vars
+#https://aosmith.rbind.io/2018/08/20/automating-exploratory-plots/
+response = names(trim)[5:23]
+expl = names(trim)[1:7]
+
+response = set_names(response)
+response
+
+expl = set_names(expl)
+expl
+
+exp.fun = function(x, y, z1, z2, z3) {
+  ggplot(data = trim, aes(x = .data[[x]], y = .data[[y]], colour = .data[[z2]])) +
+    geom_point(aes(size = .data[[z3]])) +
+    geom_line() +
+    scale_colour_manual(values = brewer.pal(n = 4, name = "BrBG")) + 
+    scale_size(range = c(0, 6)) +
+    facet_wrap( ~ .data[[z1]], ncol = 2, scales='free') + # labeller won't work with the .data for some reason
+    #scale_y_continuous(limits=c(0,16)) +
+    theme_classic() +
+    theme(strip.background = element_blank(),
+          axis.title.x=element_blank()) 
+}
+
+exp.fun("Date", "Proteolysis", "Transect", "Plot", "Moisture")
+
+exp_plots = map(response, ~exp.fun("Date", .x, "Transect", "Plot", "Moisture") )
+
+pdf("outputs/all_scatterplots.pdf")
+exp_plots
+dev.off()
+
