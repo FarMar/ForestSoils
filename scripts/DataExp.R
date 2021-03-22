@@ -363,4 +363,35 @@ perm_mirh <- adonis2(distmir~Transect*RTHeight, data = stmir, permutations = 999
 perm_mirh #strong height interaction
 
 # CAP by transect
+stmir <- as.data.frame(stmir) 
+cap_mirt <- CAPdiscrim(distmir~Transect, data = stmir, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 999)
+round(cap_mirt$F/sum(cap_mirt$F), digits=3)
+barplot(cap_mirt$F/sum(cap_mirt$F))
 
+cap_mirt_points <- bind_cols((as.data.frame(cap_mirt$x)), fmir) 
+glimpse(cap_mirt_points)
+
+ggplot(cap_mirt_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Transect), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  labs(
+    x = "CAP Axis 1; 41.2%",
+    y = "CAP Axis 2; 35.3%")
+
+# CAP + spider
+cent <- aggregate(cbind(LD1, LD2) ~ Transect, data = cap_mirt_points, FUN = mean)
+
+segs <- merge(cap_mirt_points, setNames(cent, c('Transect', 'oLD1', 'oLD2')), by = 'Transect', sort = FALSE)
+
+ggplot(cap_mirt_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = `Sampling Period`), size = 3, alpha = .7) +
+  geom_segment(data = segs, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Transect), alpha = .7) +
+  geom_point(data = cent, mapping = aes(x = LD1, y = LD2, colour = Transect), size = 5) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  labs(
+    x = "CAP Axis 1; 41.2%",
+    y = "CAP Axis 2; 35.3%")
