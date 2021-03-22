@@ -387,7 +387,7 @@ segs <- merge(cap_mirt_points, setNames(cent, c('Transect', 'oLD1', 'oLD2')), by
 
 ggplot(cap_mirt_points) + 
   geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = `Sampling Period`), size = 3, alpha = .7) +
-  geom_segment(data = segs, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Transect), alpha = .7) +
+  geom_segment(data = segs, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Transect), alpha = .7, size = .25) +
   geom_point(data = cent, mapping = aes(x = LD1, y = LD2, colour = Transect), size = 5) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
