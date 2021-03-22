@@ -25,6 +25,11 @@ library(RColorBrewer)
 library(plotrix)
 library(lubridate)
 library(ggpmisc)
+library(vegan)
+library(ape)
+library(RVAideMemoire)
+library(BiodiversityR)
+library(ggbluebadge)
 
 #### Import data ####
 OL_cor <- read_csv("data/processed/ChemAll_adm_OLrem.csv")
@@ -184,20 +189,23 @@ OL_cor <- OL_cor %>%
 
 
 #### Data selection ####
-
+## Temporal
 temporal <- OL_cor %>% 
   select(UniqueID, Date, `Sampling Period`, Transect, Plot, Easting, Northing, Height, RHeight, RTHeight, Inun,
          NDVI, VH,	VV,	Wet, Moisture, pHw,	pHc,	EC, AvailP, 
          DOC,	DTN,	NO3,	NH4,	FAA, Proteolysis,	AAMin_k1,	DON,	MBC,	
          MBN,	MicY,	MicCN)
 
-
+## Biogeochem
 bgc_mean <- t1_summary %>% 
   select(UniqueID, Transect, Plot, Easting, Northing, Height, RHeight, RTHeight, Inun,
          Sand, Silt, Clay, CEC, ExCa, ExMg, ExNa, ExK, Al, B, Ca, Co, Cr, Cu, Fe, K, Mg, Mn, Na, Ni, P, Pb, S, Zn,
          WHC, BD0_30, NDVI_mean, Wet_mean, Moisture_mean, pHc_mean, EC_mean, AvailP_mean, TotOC_mean, TotN_mean,
          d13C_mean, d15N_mean, POC_mean, HOC_mean, ROC_mean, DOC_mean, DTN_mean, NO3_mean, NH4_mean, FAA_mean, Proteolysis_mean,
          AAMin_k1_mean, DON_mean, MBC_mean, MBN_mean, MicY_mean)
+
+## MIR
+# MIR import
 
 mir <- read_csv("data/working/MasterFieldDataFC_NSW - MIR_raw.csv")
 cols_condense(mir)
@@ -227,6 +235,7 @@ mir <- mir %>%
                                          "11 months post flood"
   ))
 
+# initial check plot
 spec <- mir %>% 
   select(2, 26:1996)
 
@@ -244,6 +253,7 @@ matplot(x = waves,
         col = rep(palette(), each = 3)
 )
 
+# Interpolation
 mirinterp <- spec
 
 mirinterp1 <- new("hyperSpec", # makes the hyperspec object
@@ -266,6 +276,8 @@ matplot(x = waves_l, y = t(final[,2:1352]), ylim=c(0,3), type = "l", lty = 1,
         main = "Absorbance - 600 to 6000 & reample with resolution of 4", xlab = "Wavelength (nm)",
         ylab = "Absorbance", col = rep(palette(), each = 3))
 
+
+# baseline offset
 spoffs2 <- function (spectra) 
 {
   if (missing(spectra)) {
@@ -295,3 +307,60 @@ matplot(x = waves_ss, y = t(spec_a_bc_d), ylim=c(0,2), xlim=rev(c(600, 6000)), t
 
 finalb <- cbind(ID, spec_a_bc_d) %>% #This is now the baselined and re-sampled df.
   rename(UniqueID = "mir$UniqueID")
+
+# combine data
+mir_meta <- temporal %>%
+  select(UniqueID, Date, `Sampling Period`, Transect, Plot, Easting, Northing, Height, RHeight, RTHeight, Inun, Moisture)
+
+mir_proc <- left_join(mir_meta, finalb, by = "UniqueID")
+
+
+#### Multivariate Exploration and Analysis ####
+## MIR
+# Prep
+tmir <- mir_proc %>% 
+  mutate(across(c(13:1363), ~((.+10)^(1/4))))
+
+z.fn <- function(x) {
+  (x-mean(x))/sd(x)
+}
+
+stmir <- tmir %>% 
+  mutate(across(c(13:1363), ~z.fn(.)))
+
+fmir <- stmir %>% 
+  select(1:12)
+dmir <- stmir %>% 
+  select(13:1363)
+
+distmir <- vegdist(dmir, method = "manhattan", na.rm = TRUE)
+pmir <- pcoa(distmir)
+pmir$values$Relative_eig[1:10]
+barplot(pmir$values$Relative_eig[1:10])
+
+mir_points <- bind_cols(fmir, (as.data.frame(pmir$vectors)))
+
+# Plot
+ggplot(mir_points) + 
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = Transect), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  labs(
+    x = "PCoA Axis 1; 81.0%",
+    y = "PCoA Axis 2; 7.9%")
+
+# Permanova
+set.seed(1983)
+perm_mir <- adonis2(distmir~Transect*`Sampling Period`, data = stmir, permutations = 9999, method = "manhattan")
+perm_mir #strong impact of transect, weak of sampling time
+permpt_mir <- pairwise.perm.manova(distmir, stmir$Transect, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpt_mir
+permpd_mir <- pairwise.perm.manova(distmir, stmir$`Sampling Period`, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpd_mir #sniff of significance for last sampling vs 1st three samplings
+
+perm_mirh <- adonis2(distmir~Transect*RTHeight, data = stmir, permutations = 9999, method = "manhattan")
+perm_mirh #strong height interaction
+
+# CAP by transect
+
