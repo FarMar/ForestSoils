@@ -199,9 +199,8 @@ temporal <- OL_cor %>%
 ## Biogeochem
 bgc_mean <- t1_summary %>% 
   select(UniqueID, Transect, Plot, Easting, Northing, Height, RHeight, RTHeight, Inun,
-         Sand, Silt, Clay, CEC, ExCa, ExMg, ExNa, ExK, Al, B, Ca, Co, Cr, Cu, Fe, K, Mg, Mn, Na, Ni, P, Pb, S, Zn,
-         WHC, BD0_30, NDVI_mean, Wet_mean, Moisture_mean, pHc_mean, EC_mean, AvailP_mean, TotOC_mean, TotN_mean,
-         d13C_mean, d15N_mean, POC_mean, HOC_mean, ROC_mean, DOC_mean, DTN_mean, NO3_mean, NH4_mean, FAA_mean, Proteolysis_mean,
+         Clay, CEC, WHC, BD0_30, NDVI_mean, Wet_mean, Moisture_mean, pHc_mean, EC_mean, AvailP_mean, CN_mean, Vuln_mean,
+         d13C_mean, d15N_mean, DOC_mean, NO3_mean, NH4_mean, FAA_mean, Proteolysis_mean,
          AAMin_k1_mean, DON_mean, MBC_mean, MBN_mean, MicY_mean)
 
 ## MIR
@@ -381,17 +380,226 @@ ggplot(cap_mirt_points) +
     y = "CAP Axis 2; 35.3%")
 
 # CAP + spider
-cent <- aggregate(cbind(LD1, LD2) ~ Transect, data = cap_mirt_points, FUN = mean)
+mir_cent <- aggregate(cbind(LD1, LD2) ~ Transect, data = cap_mirt_points, FUN = mean)
 
-segs <- merge(cap_mirt_points, setNames(cent, c('Transect', 'oLD1', 'oLD2')), by = 'Transect', sort = FALSE)
+mir_segs <- merge(cap_mirt_points, setNames(cent, c('Transect', 'oLD1', 'oLD2')), by = 'Transect', sort = FALSE)
 
 ggplot(cap_mirt_points) + 
   geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = `Sampling Period`), size = 3, alpha = .7) +
-  geom_segment(data = segs, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Transect), alpha = .7, size = .25) +
-  geom_point(data = cent, mapping = aes(x = LD1, y = LD2, colour = Transect), size = 5) +
+  geom_segment(data = mir_segs, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Transect), alpha = .7, size = .25) +
+  geom_point(data = mir_cent, mapping = aes(x = LD1, y = LD2, colour = Transect), size = 5) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
   theme(strip.background = element_blank()) +
   labs(
     x = "CAP Axis 1; 41.2%",
     y = "CAP Axis 2; 35.3%")
+
+
+
+##BGC
+#pre-prep - PCA of total emlements to reduce dimenstions
+tot_elms <- t1_summary %>% 
+  select(46:65) %>% 
+  select(!c(As, B, Cd, Mo, Sb, Se))
+chart.Correlation(tot_elms)
+
+ttot_elms <- tot_elms %>% 
+  mutate(P = log1p(P),
+         Na = log1p(Na),
+         Mg = log1p(Mg),
+         K = log1p(K),
+         Co = log1p(Co),
+         Ca = log1p(Ca))
+chart.Correlation(ttot_elms)
+
+pca_elms <- princomp(ttot_elms, cor = TRUE, scores = TRUE)
+biplot(pca_elms, choices = c(1,2))
+summary(pca_elms) #PC1 = 59.2%, PC2 = 11.7%
+scores_elms <- as.data.frame(pca_elms[["scores"]]) %>% 
+  select(1:2)
+
+#prep
+bgc_mean <- cbind(bgc_mean, scores_elms)
+bgc_cor <- select(bgc_mean, 10:35)
+chart.Correlation(bgc_cor, histogram=TRUE, pch=19)
+
+
+tbgc_mean <- bgc_mean %>% 
+  mutate(MBN_mean = log1p(MBN_mean),
+         NH4_mean = log1p(NH4_mean),
+         AvailP_mean = log1p(AvailP_mean),
+         EC_mean = log1p(EC_mean),
+         pHc_mean = log1p(pHc_mean),
+         BD0_30 = log1p(BD0_30))
+
+stbgc_mean <- tbgc_mean %>% 
+  mutate(across(c(10:35), ~z.fn(.)))
+
+fbgc <- stbgc_mean %>% 
+  select(1:9)
+dbgc <- stbgc_mean %>% 
+  select(10:35)
+
+# PCoA
+distbgc <- vegdist(dbgc, method = "euclidean", na.rm = TRUE)
+pbgc <- pcoa(distbgc)
+pbgc$values$Relative_eig[1:10]
+barplot(pbgc$values$Relative_eig[1:10])
+
+bgc_points <- bind_cols(fbgc, (as.data.frame(pbgc$vectors)))
+
+compute.arrows = function (given_pcoa, orig_df) {
+  orig_df = orig_df #can be changed to select columns of interest only
+  n <- nrow(orig_df)
+  points.stand <- scale(given_pcoa$vectors)
+  S <- cov(orig_df, points.stand) #compute covariance of variables with all axes
+  pos_eigen = given_pcoa$values$Eigenvalues[seq(ncol(S))] #select only +ve eigenvalues
+  U <- S %*% diag((pos_eigen/(n - 1))^(-0.5)) #Standardise value of covariance
+  colnames(U) <- colnames(given_pcoa$vectors) #Get column names
+  given_pcoa$U <- U #Add values of covariates inside object
+  return(given_pcoa)
+}
+pbgc = compute.arrows(pbgc, dbgc)
+
+pbgc_arrows_df <- as.data.frame(pbgc$U*10) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+# Plot
+ggplot(bgc_points) + 
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = Transect, shape = Plot), size = 6) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = pbgc_arrows_df,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = Axis.1, yend = Axis.2),
+               arrow = arrow(length = unit(3, "mm"))) +
+  ggrepel::geom_text_repel(data = pbgc_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "PCoA Axis 1; 59.1%",
+    y = "PCoA Axis 2; 11.7%")
+
+# Permanova
+set.seed(1983)
+perm_bgc <- adonis2(distbgc~Transect+Plot, data = stbgc_mean, permutations = 9999, method = "euclidean")
+perm_bgc #strong impact of transect and plot
+permpt_bgc <- pairwise.perm.manova(distbgc, stbgc_mean$Transect, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpt_bgc #.089 is lowest possible  - several pairwise comps have this
+permpp_bgc <- pairwise.perm.manova(distbgc, stbgc_mean$Plot, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpp_bgc #sniff of significance for last sampling vs 1st three samplings
+
+
+# CAP by transect
+stbgc_mean <- as.data.frame(stbgc_mean) 
+cap_bgct <- CAPdiscrim(distbgc~Transect, data = stbgc_mean, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 999)
+cap_bgct <- add.spec.scores(cap_bgct, dbgc, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+round(cap_bgct$F/sum(cap_bgct$F), digits=3)
+barplot(cap_bgct$F/sum(cap_bgct$F))
+
+cap_bgct_points <- bind_cols((as.data.frame(cap_bgct$x)), fbgc) 
+glimpse(cap_bgct_points)
+
+cap_bgct_arrows <- as.data.frame(cap_bgct$cproj*5) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+ggplot(cap_bgct_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Transect), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_bgct_arrows,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_bgct_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 56.7%",
+    y = "CAP Axis 2; 23.0%")
+
+# CAP by transect + spider
+bgc_centt <- aggregate(cbind(LD1, LD2) ~ Transect, data = cap_bgct_points, FUN = mean)
+
+bgc_segst <- merge(cap_bgct_points, setNames(bgc_centt, c('Transect', 'oLD1', 'oLD2')), by = 'Transect', sort = FALSE)
+
+ggplot(cap_bgct_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Transect), size = 3, alpha = .6) +
+  geom_segment(data = bgc_segst, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Transect), alpha = .7, size = .25) +
+  geom_point(data = bgc_centt, mapping = aes(x = LD1, y = LD2, colour = Transect), size = 5) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_bgct_arrows,
+               x = 0, y = 0, alpha = 0.3,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_bgct_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 56.7%",
+    y = "CAP Axis 2; 23.0%")
+
+
+# CAP by plot
+stbgc_mean <- as.data.frame(stbgc_mean) 
+cap_bgcp <- CAPdiscrim(distbgc~Plot, data = stbgc_mean, axes = 10, m = 6, mmax = 10, add = FALSE, permutations = 999)
+cap_bgcp <- add.spec.scores(cap_bgcp, dbgc, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+round(cap_bgcp$F/sum(cap_bgcp$F), digits=3)
+barplot(cap_bgcp$F/sum(cap_bgcp$F))
+
+cap_bgcp_points <- bind_cols((as.data.frame(cap_bgcp$x)), fbgc) 
+glimpse(cap_bgcp_points)
+
+cap_bgcp_arrows <- as.data.frame(cap_bgcp$cproj*5) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+ggplot(cap_bgcp_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Plot), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_bgcp_arrows,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_bgcp_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 85.4%",
+    y = "CAP Axis 2; 14.0%")
+
+# CAP by plot + spider
+bgc_centp <- aggregate(cbind(LD1, LD2) ~ Plot, data = cap_bgcp_points, FUN = mean)
+
+bgc_segsp <- merge(cap_bgcp_points, setNames(bgc_centp, c('Plot', 'oLD1', 'oLD2')), by = 'Plot', sort = FALSE)
+
+ggplot(cap_bgcp_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Plot), size = 3, alpha = .6) +
+  geom_segment(data = bgc_segsp, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Plot), alpha = .9, size = .3) +
+  geom_point(data = bgc_centp, mapping = aes(x = LD1, y = LD2, colour = Plot), size = 5) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_bgcp_arrows,
+               x = 0, y = 0, alpha = 0.3,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_bgcp_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 56.7%",
+    y = "CAP Axis 2; 23.0%")
+
+## Temporal
