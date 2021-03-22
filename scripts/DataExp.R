@@ -173,7 +173,7 @@ str(OL_cor)
 levels(OL_cor$`Sampling Period`)
 
 OL_cor <- OL_cor %>% 
-  mutate(`Sampling Period` = fct_relevel(`Sampling Period`,
+  mutate(`Sampling Period` = fct_relevel(`Sampling Period`, #remember the back-ticks (would probably have solved factor palaver too)
                                          "Autumn 2019",
                                          "Winter 2019",
                                          "At flooding",
@@ -182,3 +182,47 @@ OL_cor <- OL_cor %>%
                                          ))
 
 
+
+#### Data selection ####
+
+temporal <- OL_cor %>% 
+  select(UniqueID, Date, `Sampling Period`, Transect, Plot, Easting, Northing, Height, RHeight, RTHeight, Inun,
+         NDVI, VH,	VV,	Wet, Moisture, pHw,	pHc,	EC, AvailP, 
+         DOC,	DTN,	NO3,	NH4,	FAA, Proteolysis,	AAMin_k1,	DON,	MBC,	
+         MBN,	MicY,	MicCN)
+
+
+bgc_mean <- t1_summary %>% 
+  select(UniqueID, Transect, Plot, Easting, Northing, Height, RHeight, RTHeight, Inun,
+         Sand, Silt, Clay, CEC, ExCa, ExMg, ExNa, ExK, Al, B, Ca, Co, Cr, Cu, Fe, K, Mg, Mn, Na, Ni, P, Pb, S, Zn,
+         WHC, BD0_30, NDVI_mean, Wet_mean, Moisture_mean, pHc_mean, EC_mean, AvailP_mean, TotOC_mean, TotN_mean,
+         d13C_mean, d15N_mean, POC_mean, HOC_mean, ROC_mean, DOC_mean, DTN_mean, NO3_mean, NH4_mean, FAA_mean, Proteolysis_mean,
+         AAMin_k1_mean, DON_mean, MBC_mean, MBN_mean, MicY_mean)
+
+mir <- read_csv("data/working/MasterFieldDataFC_NSW - MIR_raw.csv")
+cols_condense(mir)
+dim(mir)
+
+mir <- mir %>%
+  mutate("Sampling Period" = case_when(
+    Date >= as_date("2019-03-25") & Date <= as_date("2019-03-28") ~ "Autumn 2019",
+    Date >= as_date("2019-07-29") & Date <= as_date("2019-07-31") ~ "Winter 2019",
+    Date >= as_date("2019-11-04") & Date <= as_date("2019-11-06") ~ "At flooding",
+    Date >= as_date("2020-02-03") & Date <= as_date("2020-02-05") ~ "3 months post flood",
+    Date >= as_date("2020-10-13") & Date <= as_date("2020-10-15") ~ "11 months post flood"
+  ) 
+  ) %>% 
+  relocate("Sampling Period", .after = Date) 
+mir$`Sampling Period` <- as.factor(mir$`Sampling Period`)
+
+str(mir)
+levels(mir$`Sampling Period`)
+
+mir <- mir %>% 
+  mutate(`Sampling Period` = fct_relevel(`Sampling Period`, #remember the back-ticks (would probably have solved factor palaver too)
+                                         "Autumn 2019",
+                                         "Winter 2019",
+                                         "At flooding",
+                                         "3 months post flood",
+                                         "11 months post flood"
+  ))
