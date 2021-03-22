@@ -226,3 +226,72 @@ mir <- mir %>%
                                          "3 months post flood",
                                          "11 months post flood"
   ))
+
+spec <- mir %>% 
+  select(2, 26:1996)
+
+waves <- seq(7999.27979, 401.121063, by = -3.8569)
+colnames(spec[,2:1972]) <- waves
+
+matplot(x = waves, 
+        y = t(spec[2:1972]), 
+        ylim = c(0, 3.5),
+        type = "l",
+        lty = 1,
+        main = "Raw spectra",
+        xlab = "Wavenumber (cm-1)",
+        ylab = "Absorbance",
+        col = rep(palette(), each = 3)
+)
+
+mirinterp <- spec
+
+mirinterp1 <- new("hyperSpec", # makes the hyperspec object
+                  spc = mirinterp[, grep('[[:digit:]]', colnames(mirinterp))], 
+                  wavelength = as.numeric(colnames(mirinterp)[grep	('[[:digit:]]', colnames(mirinterp))]),
+                  label = list(.wavelength = "Wavenumber",
+                               spc = "Intensity"))
+
+mirinterp3 <- hyperSpec::spc.loess(mirinterp1, c(seq(6000, 600, -4)))
+# plot(mirinterp3, "spc", wl.reverse = T, col = rep(palette(), each = 3))
+output <- mirinterp3[[]]
+
+waves_l <- seq(6000, 600, by = -4)
+colnames(output) <- waves_l
+
+ID <- as.data.frame(mir$UniqueID)
+final <- cbind(ID, output) #This is now the re-sampled df. Still needs baselining.
+
+matplot(x = waves_l, y = t(final[,2:1352]), ylim=c(0,3), type = "l", lty = 1, 
+        main = "Absorbance - 600 to 6000 & reample with resolution of 4", xlab = "Wavelength (nm)",
+        ylab = "Absorbance", col = rep(palette(), each = 3))
+
+spoffs2 <- function (spectra) 
+{
+  if (missing(spectra)) {
+    stop("No spectral data provided")
+  }
+  if (spectra[1, 1] < spectra[1, dim(spectra)[2]]) {
+    spectra <- t(apply(spectra, 1, rev))
+  }
+  s <- matrix(nrow = dim(spectra)[1], ncol = dim(spectra)[2])
+  for (i in 1:dim(spectra)[1]) {
+    s[i, ] <- spectra[i, ] - min(spectra[i, ])
+  }
+  output <- rbind(spectra[1, ], s)
+  output <- output[-1,]
+}
+
+spec_a_bc_d <- spoffs2(final[,2:1352])
+dim(spec_a_bc_d)
+head(spec_a_bc_d)
+
+waves_ss <- seq(600, 6000, by=4)
+
+matplot(x = waves_ss, y = t(spec_a_bc_d), ylim=c(0,2), xlim=rev(c(600, 6000)), type = "l", lty = 1,
+        main = "Absorbance - baseline corrected", xlab = expression("Wavenumber" ~ (cm^{-1})),
+        ylab = "Absorbance", col = rep(palette(), each = 3))
+
+
+finalb <- cbind(ID, spec_a_bc_d) %>% #This is now the baselined and re-sampled df.
+  rename(UniqueID = "mir$UniqueID")
