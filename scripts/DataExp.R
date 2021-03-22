@@ -156,3 +156,29 @@ exp_plots2
 dev.off()
 
 
+#### Create date grouping column ####
+OL_cor <- OL_cor %>%
+  mutate("Sampling Period" = case_when(
+    Date >= as_date("2019-03-25") & Date <= as_date("2019-03-28") ~ "Autumn 2019",
+    Date >= as_date("2019-07-29") & Date <= as_date("2019-07-31") ~ "Winter 2019",
+    Date >= as_date("2019-11-04") & Date <= as_date("2019-11-06") ~ "At flooding",
+    Date >= as_date("2020-02-03") & Date <= as_date("2020-02-05") ~ "3 months post flood",
+    Date >= as_date("2020-10-13") & Date <= as_date("2020-10-15") ~ "11 months post flood"
+  ) 
+         ) %>% 
+  relocate("Sampling Period", .after = Date) 
+OL_cor$`Sampling Period` <- as.factor(OL_cor$`Sampling Period`)
+
+str(OL_cor)
+levels(OL_cor$`Sampling Period`)
+
+OL_cor <- OL_cor %>% 
+  mutate(`Sampling Period` = fct_relevel(`Sampling Period`,
+                                         "Autumn 2019",
+                                         "Winter 2019",
+                                         "At flooding",
+                                         "3 months post flood",
+                                         "11 months post flood"
+                                         ))
+
+
