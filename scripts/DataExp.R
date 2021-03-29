@@ -607,6 +607,11 @@ ggplot(cap_bgcp_points) +
 # Data for this are in `temporal`
 glimpse(temporal)
 temporal %<>% relocate(Inun, .after = Plot)
+temporal <- temporal %>% 
+  mutate(Inun = fct_relevel(`Inun`,
+                            "y",
+                            "m",
+                            "n"))
 
 # Quick correlation plot for evaluation
 chart.Correlation(temporal[, 7:31], histogram = TRUE, pch = 19)
@@ -620,6 +625,7 @@ chart.Correlation(ttemporal[, 7:28], histogram = TRUE, pch = 19)
 
 #prep
 sttemporal <- ttemporal %>% 
+  drop_na() %>% 
   mutate(across(c(12:28), ~z.fn(.)))
 
 ftemp <- sttemporal %>% 
@@ -627,5 +633,81 @@ ftemp <- sttemporal %>%
 dtemp <- sttemporal %>% 
   select(12:28)
 
+#PCoA
+disttemp <- vegdist(dtemp, method = "euclidean", na.rm = TRUE)
+ptemp <- pcoa(disttemp)
+ptemp$values$Relative_eig[1:10]
+barplot(ptemp$values$Relative_eig[1:10])
+
+temp_points <- bind_cols(ftemp, (as.data.frame(ptemp$vectors)))
+
+compute.arrows = function (given_pcoa, orig_df) {
+  orig_df = orig_df #can be changed to select columns of interest only
+  n <- nrow(orig_df)
+  points.stand <- scale(given_pcoa$vectors)
+  S <- cov(orig_df, points.stand) #compute covariance of variables with all axes
+  pos_eigen = given_pcoa$values$Eigenvalues[seq(ncol(S))] #select only +ve eigenvalues
+  U <- S %*% diag((pos_eigen/(n - 1))^(-0.5)) #Standardise value of covariance
+  colnames(U) <- colnames(given_pcoa$vectors) #Get column names
+  given_pcoa$U <- U #Add values of covariates inside object
+  return(given_pcoa)
+}
+ptemp = compute.arrows(ptemp, dtemp)
+
+ptemp_arrows_df <- as.data.frame(ptemp$U*10) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+# Plot
+ggplot(temp_points) + #Some separation by date, transect# seems noisy
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = Transect, shape = `Sampling Period`), size = 6) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = ptemp_arrows_df,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = Axis.1, yend = Axis.2),
+               arrow = arrow(length = unit(3, "mm"))) +
+  ggrepel::geom_text_repel(data = ptemp_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "PCoA Axis 1; 19.7%",
+    y = "PCoA Axis 2; 17.0%")
+
+ggplot(temp_points) + #A bit more informative, definite axis1 trend of transect. Date clustering a bit more obvious
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = Plot, shape = `Sampling Period`), size = 6) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = ptemp_arrows_df,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = Axis.1, yend = Axis.2),
+               arrow = arrow(length = unit(3, "mm"))) +
+  ggrepel::geom_text_repel(data = ptemp_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "PCoA Axis 1; 19.7%",
+    y = "PCoA Axis 2; 17.0%")
+
+ggplot(temp_points) + #Seems to clearly show separation
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = Plot, shape = Inun), size = 6) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  scale_shape_manual(values = c(15, 18, 0)) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = ptemp_arrows_df,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = Axis.1, yend = Axis.2),
+               arrow = arrow(length = unit(3, "mm"))) +
+  ggrepel::geom_text_repel(data = ptemp_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "PCoA Axis 1; 19.7%",
+    y = "PCoA Axis 2; 17.0%")
 
 
