@@ -603,3 +603,5 @@ ggplot(cap_bgcp_points) +
     y = "CAP Axis 2; 23.0%")
 
 ## Temporal
+
+corplot for distribution, then onwards
