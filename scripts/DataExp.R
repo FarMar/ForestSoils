@@ -30,6 +30,7 @@ library(ape)
 library(RVAideMemoire)
 library(BiodiversityR)
 library(ggbluebadge)
+library(magrittr)
 
 #### Import data ####
 OL_cor <- read_csv("data/processed/ChemAll_adm_OLrem.csv")
@@ -192,7 +193,7 @@ OL_cor <- OL_cor %>%
 ## Temporal
 temporal <- OL_cor %>% 
   select(UniqueID, Date, `Sampling Period`, Transect, Plot, Easting, Northing, Height, RHeight, RTHeight, Inun,
-         NDVI, VH,	VV,	Wet, Moisture, pHw,	pHc,	EC, AvailP, 
+         NDVI, VH,	VV,	Wet, Moisture,	pHc,	EC, AvailP, 
          DOC,	DTN,	NO3,	NH4,	FAA, Proteolysis,	AAMin_k1,	DON,	MBC,	
          MBN,	MicY,	MicCN)
 
@@ -603,5 +604,28 @@ ggplot(cap_bgcp_points) +
     y = "CAP Axis 2; 23.0%")
 
 ## Temporal
+# Data for this are in `temporal`
+glimpse(temporal)
+temporal %<>% relocate(Inun, .after = Plot)
 
-corplot for distribution, then onwards
+# Quick correlation plot for evaluation
+chart.Correlation(temporal[, 7:31], histogram = TRUE, pch = 19)
+
+# Drop and transform
+ttemporal <- temporal %>% 
+  select(-c(VH, VV, DTN)) %>% 
+  mutate(across(c(Moisture, pHc, EC, AvailP, NO3, NH4, FAA, Proteolysis, DON, MBC, MBN, MicCN), ~log1p(.)))
+  
+chart.Correlation(ttemporal[, 7:28], histogram = TRUE, pch = 19)
+
+#prep
+sttemporal <- ttemporal %>% 
+  mutate(across(c(12:28), ~z.fn(.)))
+
+ftemp <- sttemporal %>% 
+  select(1:11)
+dtemp <- sttemporal %>% 
+  select(12:28)
+
+
+
