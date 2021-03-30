@@ -55,6 +55,36 @@ str(t1_summary)
 t1_summary <- t1_summary %>% 
   relocate(where(is.character))
 
+
+plfa <- read_csv("data/working/MasterFieldDataFC_NSW - PLFAs.csv")
+plfa <- plfa %>%
+  mutate(Date = dmy(Date)) %>% 
+  group_by(Transect) %>% 
+  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
+  ungroup() %>% 
+  mutate("Sampling Period" = case_when(
+    Date >= as_date("2019-03-25") & Date <= as_date("2019-03-28") ~ "Autumn 2019",
+    Date >= as_date("2019-07-29") & Date <= as_date("2019-07-31") ~ "Winter 2019",
+    Date >= as_date("2019-11-04") & Date <= as_date("2019-11-06") ~ "At flooding",
+    Date >= as_date("2020-02-03") & Date <= as_date("2020-02-05") ~ "3 months post flood",
+    Date >= as_date("2020-10-13") & Date <= as_date("2020-10-15") ~ "11 months post flood"
+  ) 
+  ) %>% 
+  relocate("Sampling Period", .after = Date) %>% 
+  relocate(PlotPos, .after = Plot) %>% 
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun, PlotPos, "Sampling Period"), as.factor)) 
+
+plfa <- plfa %>% 
+  mutate(`Sampling Period` = fct_relevel(`Sampling Period`, #remember the back-ticks (would probably have solved factor palaver too)
+                                         "Autumn 2019",
+                                         "Winter 2019",
+                                         "At flooding",
+                                         "3 months post flood",
+                                         "11 months post flood"
+  ))
+  
+str(plfa)
+
 #### Initial facet plot for proteolysis ####
 facetlabs <- c("Transect 100",
                "Transect 101",
