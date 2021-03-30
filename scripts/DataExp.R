@@ -928,3 +928,331 @@ ggplot(cap_tempps_points) +
   labs(
     x = "CAP Axis 1; 66.8%",
     y = "CAP Axis 2; 21.3%")
+
+
+
+## PLFAs
+# Data for this are in `plfa`
+glimpse(plfa) #remember these have been standardised by total plfa already
+plfa %<>% relocate(Inun, .after = PlotPos)
+plfa <- plfa %>% 
+  mutate(Inun = fct_relevel(`Inun`,
+                            "y",
+                            "m",
+                            "n"))
+
+# Quick correlation plot for evaluation
+chart.Correlation(plfa[, 15:41], histogram = TRUE, pch = 19)
+
+stplfa1 <- filter(plfa, `Sampling Period` == "Autumn 2019")
+stplfa2 <- filter(plfa, `Sampling Period` == "Winter 2019")
+stplfa3 <- filter(plfa, `Sampling Period` == "At flooding")
+stplfa4 <- filter(plfa, `Sampling Period` == "3 months post flood")
+stplfa5 <- filter(plfa, `Sampling Period` == "11 months post flood")
+
+#prep
+stplfa <- plfa 
+fplfa <- stplfa %>% 
+  select(1:14)
+dplfa <- stplfa %>% 
+  select(15:41)
+
+fplfa1 <- stplfa1 %>% 
+  select(1:14)
+dplfa1 <- stplfa1 %>% 
+  select(15:41)
+
+fplfa2 <- stplfa2 %>% 
+  select(1:14)
+dplfa2 <- stplfa2 %>% 
+  select(15:41)
+
+fplfa3 <- stplfa3 %>% 
+  select(1:14)
+dplfa3 <- stplfa3 %>% 
+  select(15:41)
+
+fplfa4 <- stplfa4 %>% 
+  select(1:14)
+dplfa4 <- stplfa4 %>% 
+  select(15:41)
+
+fplfa5 <- stplfa5 %>% 
+  select(1:14)
+dplfa5 <- stplfa5 %>% 
+  select(15:41)
+
+
+#PCoA
+distplfa <- vegdist(dplfa, method = "euclidean", na.rm = TRUE)
+distplfa1 <- vegdist(dplfa1, method = "euclidean", na.rm = TRUE)
+distplfa2 <- vegdist(dplfa2, method = "euclidean", na.rm = TRUE)
+distplfa3 <- vegdist(dplfa3, method = "euclidean", na.rm = TRUE)
+distplfa4 <- vegdist(dplfa4, method = "euclidean", na.rm = TRUE)
+distplfa5 <- vegdist(dplfa5, method = "euclidean", na.rm = TRUE)
+
+pplfa <- pcoa(distplfa)
+pplfa1 <- pcoa(distplfa1)
+pplfa2 <- pcoa(distplfa2)
+pplfa3 <- pcoa(distplfa3)
+pplfa4 <- pcoa(distplfa4)
+pplfa5 <- pcoa(distplfa5)
+
+
+
+
+pplfa$values$Relative_eig[1:10]
+barplot(pplfa$values$Relative_eig[1:10])
+
+plfa_points <- bind_cols(fplfa, (as.data.frame(pplfa$vectors)))
+
+compute.arrows = function (given_pcoa, orig_df) {
+  orig_df = orig_df #can be changed to select columns of interest only
+  n <- nrow(orig_df)
+  points.stand <- scale(given_pcoa$vectors)
+  S <- cov(orig_df, points.stand) #compute covariance of variables with all axes
+  pos_eigen = given_pcoa$values$Eigenvalues[seq(ncol(S))] #select only +ve eigenvalues
+  U <- S %*% diag((pos_eigen/(n - 1))^(-0.5)) #Standardise value of covariance
+  colnames(U) <- colnames(given_pcoa$vectors) #Get column names
+  given_pcoa$U <- U #Add values of covariates inside object
+  return(given_pcoa)
+}
+pplfa = compute.arrows(pplfa, dplfa)
+
+pplfa_arrows_df <- as.data.frame(pplfa$U*.2) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+# Plot
+ggplot(plfa_points) + 
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = Transect, shape = PlotPos), size = 6) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = pplfa_arrows_df,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = Axis.1, yend = Axis.2),
+               arrow = arrow(length = unit(3, "mm"))) +
+  ggrepel::geom_text_repel(data = pplfa_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "PCoA Axis 1; 29.2%",
+    y = "PCoA Axis 2; 17.7%")
+
+ggplot(plfa_points) + 
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = PlotPos, shape = `Sampling Period`), size = 6) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = pplfa_arrows_df,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = Axis.1, yend = Axis.2),
+               arrow = arrow(length = unit(3, "mm"))) +
+  ggrepel::geom_text_repel(data = pplfa_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "PCoA Axis 1; 29.2%",
+    y = "PCoA Axis 2; 17.7%")
+
+ggplot(plfa_points) + 
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = PlotPos, shape = Inun), size = 6) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  scale_shape_manual(values = c(15, 18, 0)) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = pplfa_arrows_df,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = Axis.1, yend = Axis.2),
+               arrow = arrow(length = unit(3, "mm"))) +
+  ggrepel::geom_text_repel(data = pplfa_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "PCoA Axis 1; 29.2%",
+    y = "PCoA Axis 2; 17.7%")
+
+
+# Permanova
+set.seed(1983)
+perm_plfatp <- adonis2(distplfa~Transect*`Sampling Period`, data = stplfa, permutations = 9999, method = "euclidean")
+perm_plfatp #strong impact of transect and sampling period, STRONG interaction
+perm_plfapp <- adonis2(distplfa~PlotPos*`Sampling Period`, data = stplfa, permutations = 9999, method = "euclidean")
+perm_plfapp #strong impact of plot position and sampling period, no interaction
+perm_plfatpp <- adonis2(distplfa~Transect*`Sampling Period`+PlotPos, data = stplfa, permutations = 9999, method = "euclidean")
+perm_plfatpp #strong impact of transect, plot position and sampling period in additive model
+
+permpt_plfa <- pairwise.perm.manova(distplfa, stplfa$Transect, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpt_plfa #Driffer: 0&3,9; 1&9; 2&3,8,9; 3&4,6,7,9; 4&8,9; 6&9  
+permpp_plfa <- pairwise.perm.manova(distplfa, stplfa$PlotPos, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpp_plfa #Differ: 1&2,3,4; 2&4
+permpp_plfa <- pairwise.perm.manova(distplfa, stplfa$`Sampling Period`, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpp_plfa #1&2,3,4,5; 2&3,4,5
+
+# Split by sampling period required
+
+
+# CAP by transect
+stplfa <- as.data.frame(stplfa) 
+cap_plfat <- CAPdiscrim(distplfa~Transect, data = stplfa, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 9)
+cap_plfat <- add.spec.scores(cap_plfat, dplfa, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+round(cap_plfat$F/sum(cap_plfat$F), digits=3)
+barplot(cap_plfat$F/sum(cap_plfat$F))
+
+cap_plfat_points <- bind_cols((as.data.frame(cap_plfat$x)), fplfa) 
+glimpse(cap_plfat_points)
+
+cap_plfat_arrows <- as.data.frame(cap_plfat$cproj*5) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+ggplot(cap_plfat_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = PlotPos), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_plfat_arrows,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_plfat_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 62.1%",
+    y = "CAP Axis 2; 18.5%")
+
+# CAP by transect + spider
+plfa_centt <- aggregate(cbind(LD1, LD2) ~ Transect, data = cap_plfat_points, FUN = mean)
+
+plfa_segst <- merge(cap_plfat_points, setNames(plfa_centt, c('Transect', 'oLD1', 'oLD2')), by = 'Transect', sort = FALSE)
+
+ggplot(cap_plfat_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = PlotPos), size = 3, alpha = .6) +
+  geom_segment(data = plfa_segst, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Transect), alpha = .7, size = .25) +
+  geom_point(data = plfa_centt, mapping = aes(x = LD1, y = LD2, colour = Transect), size = 5) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_plfat_arrows,
+               x = 0, y = 0, alpha = 0.3,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_plfat_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 62.1%",
+    y = "CAP Axis 2; 18.5%")
+
+
+# CAP by plotpos
+cap_plfap <- CAPdiscrim(distplfa~PlotPos, data = stplfa, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 9)
+cap_plfap <- add.spec.scores(cap_plfap, dplfa, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+round(cap_plfap$F/sum(cap_plfap$F), digits=3)
+barplot(cap_plfap$F/sum(cap_plfap$F))
+
+cap_plfap_points <- bind_cols((as.data.frame(cap_plfap$x)), fplfa) 
+glimpse(cap_plfap_points)
+
+cap_plfap_arrows <- as.data.frame(cap_plfap$cproj*5) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+ggplot(cap_plfap_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = PlotPos), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_plfap_arrows,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_plfap_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 79.5%",
+    y = "CAP Axis 2; 20.0%")
+
+# CAP by plot + spider
+plfa_centp <- aggregate(cbind(LD1, LD2) ~ PlotPos, data = cap_plfap_points, FUN = mean)
+
+plfa_segsp <- merge(cap_plfap_points, setNames(plfa_centp, c('PlotPos', 'oLD1', 'oLD2')), by = 'PlotPos', sort = FALSE)
+
+ggplot(cap_plfap_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = PlotPos), size = 3, alpha = .6) +
+  geom_segment(data = plfa_segsp, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = PlotPos), alpha = .9, size = .3) +
+  geom_point(data = plfa_centp, mapping = aes(x = LD1, y = LD2, colour = PlotPos), size = 5) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_plfap_arrows,
+               x = 0, y = 0, alpha = 0.3,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_plfap_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 79.5%",
+    y = "CAP Axis 2; 20.0%")
+
+# CAP by SamplingPeriod
+cap_plfaps <- CAPdiscrim(distplfa~`Sampling Period`, data = stplfa, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 9)
+cap_plfaps <- add.spec.scores(cap_plfaps, dplfa, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+round(cap_plfaps$F/sum(cap_plfaps$F), digits=3)
+barplot(cap_plfaps$F/sum(cap_plfaps$F))
+
+cap_plfaps_points <- bind_cols((as.data.frame(cap_plfaps$x)), fplfa) 
+glimpse(cap_plfaps_points)
+
+cap_plfaps_arrows <- as.data.frame(cap_plfaps$cproj*5) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+ggplot(cap_plfaps_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = `Sampling Period`), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 6, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_plfaps_arrows,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_plfaps_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 66.8%",
+    y = "CAP Axis 2; 21.3%")
+
+# CAP by SamplingPeriod + spider
+plfa_centps <- aggregate(cbind(LD1, LD2) ~ `Sampling Period`, data = cap_plfaps_points, FUN = mean)
+
+plfa_segsps <- merge(cap_plfaps_points, setNames(plfa_centps, c('Sampling Period', 'oLD1', 'oLD2')), by = 'Sampling Period', sort = FALSE)
+
+ggplot(cap_plfaps_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = `Sampling Period`), size = 3, alpha = .6) +
+  geom_segment(data = plfa_segsps, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = `Sampling Period`), alpha = .9, size = .3) +
+  geom_point(data = plfa_centps, mapping = aes(x = LD1, y = LD2, colour = `Sampling Period`), size = 5) +
+  scale_colour_manual(values = brewer.pal(n = 6, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_plfaps_arrows,
+               x = 0, y = 0, alpha = 0.3,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_plfaps_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 66.8%",
+    y = "CAP Axis 2; 21.3%")
+
