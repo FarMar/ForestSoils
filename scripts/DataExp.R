@@ -35,13 +35,21 @@ library(magrittr)
 #### Import data ####
 OL_cor <- read_csv("data/processed/ChemAll_adm_OLrem.csv")
 OL_cor <- OL_cor %>% 
-  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun), as.factor)) %>% 
-  mutate(Date = dmy(Date))
+  group_by(Transect) %>% 
+  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
+  ungroup() %>% 
+  relocate(PlotPos, .after = Plot) %>% 
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun, PlotPos), as.factor)) %>% 
+  mutate(Date = dmy(Date)) 
 str(OL_cor)
 
 
 t1_summary <- read_csv("data/processed/summary.csv")
 t1_summary <- t1_summary %>% 
+  group_by(Transect) %>% 
+  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
+  ungroup() %>% 
+  relocate(PlotPos, .after = Plot) %>% 
   mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun), as.factor))
 str(t1_summary)
 t1_summary <- t1_summary %>% 
@@ -60,7 +68,7 @@ facetlabs <- c("Transect 100",
                "Transect 109")
 names(facetlabs) <- c("0", "1", "2", "3", "4", "5", "6", "7", "8", "9")
 
-ggplot(data = OL_cor, aes(x = Date, y = Proteolysis, colour = Plot)) +
+ggplot(data = OL_cor, aes(x = Date, y = Proteolysis, colour = PlotPos)) +
   geom_point(aes(size = Moisture)) +
   geom_line() +
   scale_colour_manual(values = brewer.pal(n = 4, name = "BrBG")) + # (values = c("blue", "dark green", "brown", "dark brown")) +
@@ -76,15 +84,15 @@ ggplot(data = OL_cor, aes(x = Date, y = Proteolysis, colour = Plot)) +
 
 #### Looping ####
 # limit columns to just the factors required for the plot and the response variables from all five time points
-trim <- OL_cor %>% select(UniqueID, Date, Transect, Plot, NDVI, VH,	VV,	Wet, Moisture, pHw,	pHc,	EC, AvailP, 
+trim <- OL_cor %>% select(UniqueID, Date, Transect, Plot, PlotPos, NDVI, VH,	VV,	Wet, Moisture, pHw,	pHc,	EC, AvailP, 
                        DOC,	DTN,	NO3,	NH4,	FAA, Proteolysis,	AAMin_k1,	AAMin_k2,	AAMin_a, AAMin_b,	DON,	MBC,	
                        MBN,	MicY,	MicCN)
 
-
+str(trim)
 #Names for response and explanatory vars
 #https://aosmith.rbind.io/2018/08/20/automating-exploratory-plots/
-response = names(trim)[5:28]
-expl = names(trim)[1:9]
+response = names(trim)[6:29]
+expl = names(trim)[1:10]
 
 response = set_names(response)
 response
@@ -192,14 +200,14 @@ OL_cor <- OL_cor %>%
 #### Data selection ####
 ## Temporal
 temporal <- OL_cor %>% 
-  select(UniqueID, Date, `Sampling Period`, Transect, Plot, Easting, Northing, Height, RHeight, RTHeight, Inun,
+  select(UniqueID, Date, `Sampling Period`, Transect, Plot, PlotPos, Easting, Northing, Height, RHeight, RTHeight, Inun,
          NDVI, VH,	VV,	Wet, Moisture,	pHc,	EC, AvailP, 
          DOC,	DTN,	NO3,	NH4,	FAA, Proteolysis,	AAMin_k1,	DON,	MBC,	
          MBN,	MicY,	MicCN)
 
 ## Biogeochem
 bgc_mean <- t1_summary %>% 
-  select(UniqueID, Transect, Plot, Easting, Northing, Height, RHeight, RTHeight, Inun,
+  select(UniqueID, Transect, Plot, PlotPos, Easting, Northing, Height, RHeight, RTHeight, Inun,
          Clay, CEC, WHC, BD0_30, NDVI_mean, Wet_mean, Moisture_mean, pHc_mean, EC_mean, AvailP_mean, CN_mean, Vuln_mean,
          d13C_mean, d15N_mean, DOC_mean, NO3_mean, NH4_mean, FAA_mean, Proteolysis_mean,
          AAMin_k1_mean, DON_mean, MBC_mean, MBN_mean, MicY_mean)
@@ -212,6 +220,10 @@ cols_condense(mir)
 dim(mir)
 
 mir <- mir %>%
+  group_by(Transect) %>% 
+  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
+  ungroup() %>% 
+  relocate(PlotPos, .after = Plot) %>% 
   mutate("Sampling Period" = case_when(
     Date >= as_date("2019-03-25") & Date <= as_date("2019-03-28") ~ "Autumn 2019",
     Date >= as_date("2019-07-29") & Date <= as_date("2019-07-31") ~ "Winter 2019",
@@ -237,7 +249,7 @@ mir <- mir %>%
 
 # initial check plot
 spec <- mir %>% 
-  select(2, 26:1996)
+  select(2, 27:1997)
 
 waves <- seq(7999.27979, 401.121063, by = -3.8569)
 colnames(spec[,2:1972]) <- waves
@@ -310,7 +322,7 @@ finalb <- cbind(ID, spec_a_bc_d) %>% #This is now the baselined and re-sampled d
 
 # combine data
 mir_meta <- temporal %>%
-  select(UniqueID, Date, `Sampling Period`, Transect, Plot, Easting, Northing, Height, RHeight, RTHeight, Inun, Moisture)
+  select(UniqueID, Date, `Sampling Period`, Transect, Plot, PlotPos, Easting, Northing, Height, RHeight, RTHeight, Inun, Moisture)
 
 mir_proc <- left_join(mir_meta, finalb, by = "UniqueID")
 
@@ -319,19 +331,19 @@ mir_proc <- left_join(mir_meta, finalb, by = "UniqueID")
 ## MIR
 # Prep
 tmir <- mir_proc %>% 
-  mutate(across(c(13:1363), ~((.+10)^(1/4))))
+  mutate(across(c(14:1364), ~((.+10)^(1/4))))
 
 z.fn <- function(x) {
   (x-mean(x))/sd(x)
 }
 
 stmir <- tmir %>% 
-  mutate(across(c(13:1363), ~z.fn(.)))
+  mutate(across(c(14:1364), ~z.fn(.)))
 
 fmir <- stmir %>% 
-  select(1:12)
+  select(1:13)
 dmir <- stmir %>% 
-  select(13:1363)
+  select(14:1363)
 
 distmir <- vegdist(dmir, method = "manhattan", na.rm = TRUE)
 pmir <- pcoa(distmir)
@@ -342,7 +354,7 @@ mir_points <- bind_cols(fmir, (as.data.frame(pmir$vectors)))
 
 # Plot
 ggplot(mir_points) + 
-  geom_point(aes(x=Axis.1, y=Axis.2, colour = Transect), size = 4) +
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = Transect, shape = PlotPos), size = 4) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
   theme(strip.background = element_blank()) +
@@ -372,7 +384,7 @@ cap_mirt_points <- bind_cols((as.data.frame(cap_mirt$x)), fmir)
 glimpse(cap_mirt_points)
 
 ggplot(cap_mirt_points) + 
-  geom_point(aes(x=LD1, y=LD2, colour = Transect), size = 4) +
+  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = PlotPos), size = 4) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
   theme(strip.background = element_blank()) +
@@ -386,7 +398,7 @@ mir_cent <- aggregate(cbind(LD1, LD2) ~ Transect, data = cap_mirt_points, FUN = 
 mir_segs <- merge(cap_mirt_points, setNames(cent, c('Transect', 'oLD1', 'oLD2')), by = 'Transect', sort = FALSE)
 
 ggplot(cap_mirt_points) + 
-  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = `Sampling Period`), size = 3, alpha = .7) +
+  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = PlotPos), size = 3, alpha = .7) +
   geom_segment(data = mir_segs, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Transect), alpha = .7, size = .25) +
   geom_point(data = mir_cent, mapping = aes(x = LD1, y = LD2, colour = Transect), size = 5) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
@@ -711,3 +723,8 @@ ggplot(temp_points) + #Seems to clearly show separation
     y = "PCoA Axis 2; 17.0%")
 
 
+test <- temporal %>%
+  group_by(Transect) %>% 
+  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
+  ungroup() %>% 
+  relocate(PlotPos, .after = Plot)
