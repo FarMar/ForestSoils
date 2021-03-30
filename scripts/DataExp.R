@@ -50,7 +50,7 @@ t1_summary <- t1_summary %>%
   mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
   ungroup() %>% 
   relocate(PlotPos, .after = Plot) %>% 
-  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun), as.factor))
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun, PlotPos), as.factor))
 str(t1_summary)
 t1_summary <- t1_summary %>% 
   relocate(where(is.character))
@@ -413,7 +413,7 @@ ggplot(cap_mirt_points) +
 ##BGC
 #pre-prep - PCA of total emlements to reduce dimenstions
 tot_elms <- t1_summary %>% 
-  select(46:65) %>% 
+  select(47:66) %>% 
   select(!c(As, B, Cd, Mo, Sb, Se))
 chart.Correlation(tot_elms)
 
@@ -434,7 +434,7 @@ scores_elms <- as.data.frame(pca_elms[["scores"]]) %>%
 
 #prep
 bgc_mean <- cbind(bgc_mean, scores_elms)
-bgc_cor <- select(bgc_mean, 10:35)
+bgc_cor <- select(bgc_mean, 11:36)
 chart.Correlation(bgc_cor, histogram=TRUE, pch=19)
 
 
@@ -447,12 +447,12 @@ tbgc_mean <- bgc_mean %>%
          BD0_30 = log1p(BD0_30))
 
 stbgc_mean <- tbgc_mean %>% 
-  mutate(across(c(10:35), ~z.fn(.)))
+  mutate(across(c(11:36), ~z.fn(.)))
 
 fbgc <- stbgc_mean %>% 
-  select(1:9)
+  select(1:10)
 dbgc <- stbgc_mean %>% 
-  select(10:35)
+  select(11:36)
 
 # PCoA
 distbgc <- vegdist(dbgc, method = "euclidean", na.rm = TRUE)
@@ -480,7 +480,7 @@ pbgc_arrows_df <- as.data.frame(pbgc$U*10) %>% #Pulls object from list, scales a
 
 # Plot
 ggplot(bgc_points) + 
-  geom_point(aes(x=Axis.1, y=Axis.2, colour = Transect, shape = Plot), size = 6) +
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = Transect, shape = PlotPos), size = 6) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
   theme(strip.background = element_blank()) +
@@ -493,17 +493,17 @@ ggplot(bgc_points) +
                            size = 4
   ) +
   labs(
-    x = "PCoA Axis 1; 59.1%",
-    y = "PCoA Axis 2; 11.7%")
+    x = "PCoA Axis 1; 25.6%",
+    y = "PCoA Axis 2; 16.2%")
 
 # Permanova
 set.seed(1983)
-perm_bgc <- adonis2(distbgc~Transect+Plot, data = stbgc_mean, permutations = 9999, method = "euclidean")
+perm_bgc <- adonis2(distbgc~Transect+PlotPos, data = stbgc_mean, permutations = 9999, method = "euclidean")
 perm_bgc #strong impact of transect and plot
 permpt_bgc <- pairwise.perm.manova(distbgc, stbgc_mean$Transect, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
-permpt_bgc #.089 is lowest possible  - several pairwise comps have this
-permpp_bgc <- pairwise.perm.manova(distbgc, stbgc_mean$Plot, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
-permpp_bgc #sniff of significance for last sampling vs 1st three samplings
+permpt_bgc #.098 is lowest possible  - several pairwise comps have this
+permpp_bgc <- pairwise.perm.manova(distbgc, stbgc_mean$PlotPos, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpp_bgc #4 is sig diff from 1&2. 3 borderline diff from 1&2. 1 borderline diff from 2
 
 
 # CAP by transect
@@ -520,7 +520,7 @@ cap_bgct_arrows <- as.data.frame(cap_bgct$cproj*5) %>% #Pulls object from list, 
   rownames_to_column("variable")
 
 ggplot(cap_bgct_points) + 
-  geom_point(aes(x=LD1, y=LD2, colour = Transect), size = 4) +
+  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = PlotPos), size = 4) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
   theme(strip.background = element_blank()) +
@@ -542,7 +542,7 @@ bgc_centt <- aggregate(cbind(LD1, LD2) ~ Transect, data = cap_bgct_points, FUN =
 bgc_segst <- merge(cap_bgct_points, setNames(bgc_centt, c('Transect', 'oLD1', 'oLD2')), by = 'Transect', sort = FALSE)
 
 ggplot(cap_bgct_points) + 
-  geom_point(aes(x=LD1, y=LD2, colour = Transect), size = 3, alpha = .6) +
+  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = PlotPos), size = 3, alpha = .6) +
   geom_segment(data = bgc_segst, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Transect), alpha = .7, size = .25) +
   geom_point(data = bgc_centt, mapping = aes(x = LD1, y = LD2, colour = Transect), size = 5) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
@@ -561,9 +561,9 @@ ggplot(cap_bgct_points) +
     y = "CAP Axis 2; 23.0%")
 
 
-# CAP by plot
+# CAP by plotpos
 stbgc_mean <- as.data.frame(stbgc_mean) 
-cap_bgcp <- CAPdiscrim(distbgc~Plot, data = stbgc_mean, axes = 10, m = 6, mmax = 10, add = FALSE, permutations = 999)
+cap_bgcp <- CAPdiscrim(distbgc~PlotPos, data = stbgc_mean, axes = 10, m = 3, mmax = 10, add = FALSE, permutations = 999)
 cap_bgcp <- add.spec.scores(cap_bgcp, dbgc, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
 round(cap_bgcp$F/sum(cap_bgcp$F), digits=3)
 barplot(cap_bgcp$F/sum(cap_bgcp$F))
@@ -571,11 +571,11 @@ barplot(cap_bgcp$F/sum(cap_bgcp$F))
 cap_bgcp_points <- bind_cols((as.data.frame(cap_bgcp$x)), fbgc) 
 glimpse(cap_bgcp_points)
 
-cap_bgcp_arrows <- as.data.frame(cap_bgcp$cproj*5) %>% #Pulls object from list, scales arbitrarily and makes a new df
+cap_bgcp_arrows <- as.data.frame(cap_bgcp$cproj*3) %>% #Pulls object from list, scales arbitrarily and makes a new df
   rownames_to_column("variable")
 
 ggplot(cap_bgcp_points) + 
-  geom_point(aes(x=LD1, y=LD2, colour = Plot), size = 4) +
+  geom_point(aes(x=LD1, y=LD2, colour = PlotPos), size = 4) +
   scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
   theme_classic() +
   theme(strip.background = element_blank()) +
@@ -588,8 +588,8 @@ ggplot(cap_bgcp_points) +
                            size = 4
   ) +
   labs(
-    x = "CAP Axis 1; 85.4%",
-    y = "CAP Axis 2; 14.0%")
+    x = "CAP Axis 1; 76.3%",
+    y = "CAP Axis 2; 23.7%")
 
 # CAP by plot + spider
 bgc_centp <- aggregate(cbind(LD1, LD2) ~ Plot, data = cap_bgcp_points, FUN = mean)
@@ -618,7 +618,7 @@ ggplot(cap_bgcp_points) +
 ## Temporal
 # Data for this are in `temporal`
 glimpse(temporal)
-temporal %<>% relocate(Inun, .after = Plot)
+temporal %<>% relocate(Inun, .after = PlotPos)
 temporal <- temporal %>% 
   mutate(Inun = fct_relevel(`Inun`,
                             "y",
@@ -626,24 +626,24 @@ temporal <- temporal %>%
                             "n"))
 
 # Quick correlation plot for evaluation
-chart.Correlation(temporal[, 7:31], histogram = TRUE, pch = 19)
+chart.Correlation(temporal[, 8:32], histogram = TRUE, pch = 19)
 
 # Drop and transform
 ttemporal <- temporal %>% 
   select(-c(VH, VV, DTN)) %>% 
   mutate(across(c(Moisture, pHc, EC, AvailP, NO3, NH4, FAA, Proteolysis, DON, MBC, MBN, MicCN), ~log1p(.)))
   
-chart.Correlation(ttemporal[, 7:28], histogram = TRUE, pch = 19)
+chart.Correlation(ttemporal[, 8:29], histogram = TRUE, pch = 19)
 
 #prep
 sttemporal <- ttemporal %>% 
   drop_na() %>% 
-  mutate(across(c(12:28), ~z.fn(.)))
+  mutate(across(c(13:29), ~z.fn(.)))
 
 ftemp <- sttemporal %>% 
-  select(1:11)
+  select(1:12)
 dtemp <- sttemporal %>% 
-  select(12:28)
+  select(13:29)
 
 #PCoA
 disttemp <- vegdist(dtemp, method = "euclidean", na.rm = TRUE)
@@ -688,7 +688,7 @@ ggplot(temp_points) + #Some separation by date, transect# seems noisy
     y = "PCoA Axis 2; 17.0%")
 
 ggplot(temp_points) + #A bit more informative, definite axis1 trend of transect. Date clustering a bit more obvious
-  geom_point(aes(x=Axis.1, y=Axis.2, colour = Plot, shape = `Sampling Period`), size = 6) +
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = PlotPos, shape = `Sampling Period`), size = 6) +
   scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
   theme_classic() +
   theme(strip.background = element_blank()) +
@@ -705,7 +705,7 @@ ggplot(temp_points) + #A bit more informative, definite axis1 trend of transect.
     y = "PCoA Axis 2; 17.0%")
 
 ggplot(temp_points) + #Seems to clearly show separation
-  geom_point(aes(x=Axis.1, y=Axis.2, colour = Plot, shape = Inun), size = 6) +
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = PlotPos, shape = Inun), size = 6) +
   scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
   scale_shape_manual(values = c(15, 18, 0)) +
   theme_classic() +
@@ -723,8 +723,4 @@ ggplot(temp_points) + #Seems to clearly show separation
     y = "PCoA Axis 2; 17.0%")
 
 
-test <- temporal %>%
-  group_by(Transect) %>% 
-  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
-  ungroup() %>% 
-  relocate(PlotPos, .after = Plot)
+
