@@ -1501,15 +1501,16 @@ ggplot(cap_temppP_points) +
 
 # CAP by SamplingPeriod
 cap_temppsP <- CAPdiscrim(disttempP~`Sampling Period`, data = sttemporalP, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 9)
-cap_temppsP <- add.spec.scores(cap_temppsP, dtemp, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+cap_temppsP <- add.spec.scores(cap_temppsP, dtempP, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
 round(cap_temppsP$F/sum(cap_temppsP$F), digits=3)
 barplot(cap_temppsP$F/sum(cap_temppsP$F))
 
 cap_temppsP_points <- bind_cols((as.data.frame(cap_temppsP$x)), ftempP) 
-glimpse(cap_tempps_points)
+glimpse(cap_temppsP_points)
 
 cap_temppsP_arrows <- as.data.frame(cap_temppsP$cproj*5) %>% #Pulls object from list, scales arbitrarily and makes a new df
   rownames_to_column("variable")
+cap_temppsP_arrows
 
 ggplot(cap_temppsP_points) + 
   geom_point(aes(x=LD1, y=LD2, colour = `Sampling Period`), size = 4) +
@@ -1534,7 +1535,7 @@ tempP_centps <- aggregate(cbind(LD1, LD2) ~ `Sampling Period`, data = cap_tempps
 tempP_segsps <- merge(cap_temppsP_points, setNames(tempP_centps, c('Sampling Period', 'oLD1', 'oLD2')), by = 'Sampling Period', sort = FALSE)
 
 ggplot(cap_temppsP_points) + 
-  geom_point(aes(x=LD1, y=LD2, colour = `Sampling Period`), size = 3, alpha = .6) +
+  geom_point(aes(x=LD1, y=LD2, colour = `Sampling Period`, shape = PlotPos), size = 3, alpha = .6) +
   geom_segment(data = tempP_segsps, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = `Sampling Period`), alpha = .9, size = .3) +
   geom_point(data = tempP_centps, mapping = aes(x = LD1, y = LD2, colour = `Sampling Period`), size = 5) +
   scale_colour_manual(values = brewer.pal(n = 6, name = "Spectral")) +
