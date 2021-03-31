@@ -1289,22 +1289,22 @@ ttemporalP <- temporalP %>%
 chart.Correlation(ttemporalP[, 8:33], histogram = TRUE, pch = 19)
 
 #prep
-sttemporal <- ttemporal %>% 
+sttemporalP <- ttemporalP %>% 
   drop_na() %>% 
-  mutate(across(c(13:29), ~z.fn(.)))
+  mutate(across(c(13:33), ~z.fn(.)))
 
-ftemp <- sttemporal %>% 
+ftempP <- sttemporalP %>% 
   select(1:12)
-dtemp <- sttemporal %>% 
-  select(13:29)
+dtempP <- sttemporalP %>% 
+  select(13:33)
 
 #PCoA
-disttemp <- vegdist(dtemp, method = "euclidean", na.rm = TRUE)
-ptemp <- pcoa(disttemp)
-ptemp$values$Relative_eig[1:10]
-barplot(ptemp$values$Relative_eig[1:10])
+disttempP <- vegdist(dtempP, method = "euclidean", na.rm = TRUE)
+ptempP <- pcoa(disttempP)
+ptempP$values$Relative_eig[1:10]
+barplot(ptempP$values$Relative_eig[1:10])
 
-temp_points <- bind_cols(ftemp, (as.data.frame(ptemp$vectors)))
+tempP_points <- bind_cols(ftempP, (as.data.frame(ptempP$vectors)))
 
 compute.arrows = function (given_pcoa, orig_df) {
   orig_df = orig_df #can be changed to select columns of interest only
@@ -1317,63 +1317,63 @@ compute.arrows = function (given_pcoa, orig_df) {
   given_pcoa$U <- U #Add values of covariates inside object
   return(given_pcoa)
 }
-ptemp = compute.arrows(ptemp, dtemp)
+ptempP = compute.arrows(ptempP, dtempP)
 
-ptemp_arrows_df <- as.data.frame(ptemp$U*10) %>% #Pulls object from list, scales arbitrarily and makes a new df
+ptempP_arrows_df <- as.data.frame(ptempP$U*10) %>% #Pulls object from list, scales arbitrarily and makes a new df
   rownames_to_column("variable")
 
 # Plot
-ggplot(temp_points) + #Some separation by date, transect# seems noisy
+ggplot(tempP_points) + #Some separation by date, transect# seems noisy
   geom_point(aes(x=Axis.1, y=Axis.2, colour = Transect, shape = `Sampling Period`), size = 6) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
   theme(strip.background = element_blank()) +
-  geom_segment(data = ptemp_arrows_df,
+  geom_segment(data = ptempP_arrows_df,
                x = 0, y = 0, alpha = 0.7,
                mapping = aes(xend = Axis.1, yend = Axis.2),
                arrow = arrow(length = unit(3, "mm"))) +
-  ggrepel::geom_text_repel(data = ptemp_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+  ggrepel::geom_text_repel(data = ptempP_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
                            # colour = "#72177a", 
                            size = 4
   ) +
   labs(
-    x = "PCoA Axis 1; 19.7%",
-    y = "PCoA Axis 2; 17.0%")
+    x = "PCoA Axis 1; 18.6%",
+    y = "PCoA Axis 2; 15.7%")
 
-ggplot(temp_points) + #A bit more informative, definite axis1 trend of transect. Date clustering a bit more obvious
+ggplot(tempP_points) + #A bit more informative, definite axis1 trend of transect. Date clustering a bit more obvious
   geom_point(aes(x=Axis.1, y=Axis.2, colour = PlotPos, shape = `Sampling Period`), size = 6) +
   scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
   theme_classic() +
   theme(strip.background = element_blank()) +
-  geom_segment(data = ptemp_arrows_df,
+  geom_segment(data = ptempP_arrows_df,
                x = 0, y = 0, alpha = 0.7,
                mapping = aes(xend = Axis.1, yend = Axis.2),
                arrow = arrow(length = unit(3, "mm"))) +
-  ggrepel::geom_text_repel(data = ptemp_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+  ggrepel::geom_text_repel(data = ptempP_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
                            # colour = "#72177a", 
                            size = 4
   ) +
   labs(
-    x = "PCoA Axis 1; 19.7%",
-    y = "PCoA Axis 2; 17.0%")
+    x = "PCoA Axis 1; 18.6%",
+    y = "PCoA Axis 2; 15.7%")
 
-ggplot(temp_points) + #Seems to clearly show separation
+ggplot(tempP_points) + #Seems to clearly show separation
   geom_point(aes(x=Axis.1, y=Axis.2, colour = PlotPos, shape = Inun), size = 6) +
   scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
   scale_shape_manual(values = c(15, 18, 0)) +
   theme_classic() +
   theme(strip.background = element_blank()) +
-  geom_segment(data = ptemp_arrows_df,
+  geom_segment(data = ptempP_arrows_df,
                x = 0, y = 0, alpha = 0.7,
                mapping = aes(xend = Axis.1, yend = Axis.2),
                arrow = arrow(length = unit(3, "mm"))) +
-  ggrepel::geom_text_repel(data = ptemp_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+  ggrepel::geom_text_repel(data = ptempP_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
                            # colour = "#72177a", 
                            size = 4
   ) +
   labs(
-    x = "PCoA Axis 1; 19.7%",
-    y = "PCoA Axis 2; 17.0%")
+    x = "PCoA Axis 1; 18.6%",
+    y = "PCoA Axis 2; 15.7%")
 
 
 # Permanova
