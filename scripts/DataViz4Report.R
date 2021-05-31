@@ -263,5 +263,14 @@ ggplot(cap_mirt_points) +
     y = "CAP Axis 2; 35.3%")
 
 
+#### Metals PCA ####
+
+
+
+#### Chem Cap ####
+
+
+
+#### BW ####
 
 
