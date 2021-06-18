@@ -13,6 +13,7 @@ setwd("/Users/markfarrell/OneDrive - CSIRO/Data/ForestSoils")
 
 #### Packages ####
 install.packages("ggtern")
+install.packages("ggdist")
 
 
 library(tidyverse)
@@ -24,6 +25,7 @@ library(plotrix)
 library(ggpmisc)
 library(ggtern)
 library(ggbluebadge)
+library(ggdist)
 library(magrittr)
 library(lubridate)
 library(vegan)
