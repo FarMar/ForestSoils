@@ -23,7 +23,7 @@ library(corrplot)
 library(RColorBrewer)
 library(plotrix)
 library(ggpmisc)
-library(ggtern)
+#library(ggtern)
 library(ggbluebadge)
 library(ggdist)
 library(magrittr)
@@ -59,6 +59,7 @@ str(all)
 
 
 #### Ternary plot ####
+# This is best run standalone as {ggtern} masks a lot of ggplot 
 ggtern(data=sum, aes(Sand,Clay,Silt, color = Transect)) + 
   geom_point(size = 4) +
   theme_rgbw() +
@@ -266,10 +267,48 @@ ggplot(cap_mirt_points) +
 
 
 #### Metals PCA ####
+metals <- sum %>% 
+  select(c(1:11, 45:65)) %>% 
+  select(-c(As, Cd, Mo, Sb, Se)) %>% 
+  group_by(Transect) %>%
+  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
+  ungroup() %>% 
+  relocate(PlotPos, .after = Plot) %>% 
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, PlotPos), as.factor))
+
+metals %<>% 
+  mutate(P = log1p(P),
+         Na = log1p(Na),
+         Mg = log1p(Mg),
+         K = log1p(K),
+         Co = log1p(Co),
+         Ca = log1p(Ca))
+chart.Correlation(metals[13:28])
+
+pca_metals <- princomp(metals[13:28], cor = TRUE, scores = TRUE)
+biplot(pca_metals, choices = c(1,2))
+summary(pca_metals) #PC1 = 58.3%, PC2 = 13.9%
+scores_metals <- as.data.frame(pca_metals[["scores"]]) %>% 
+  select(1:2) 
+
+metals_plot <- bind_cols(metals, scores_metals)
+
+metals_cent <- aggregate(cbind(Comp.1, Comp.2) ~ Transect, data = metals_plot, FUN = mean)
+metals_segs <- merge(metals_plot, setNames(metals_cent, c('Transect', 'PC1', 'PC2')), by = 'Transect', sort = FALSE)
+
+ggplot(metals_plot) + 
+  geom_point(aes(x=Comp.1, y=Comp.2, colour = Transect, shape = PlotPos), size = 3, alpha = .7) +
+  geom_segment(data = metals_segs, mapping = aes(x = Comp.1, y = Comp.2, xend = PC1, yend = PC2, colour = Transect), alpha = .5, size = .25) +
+  geom_point(data = metals_cent, mapping = aes(x = Comp.1, y = Comp.2, colour = Transect), size = 5, alpha = 1.0) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  labs(
+    x = "PCA Axis 1; 58.3%",
+    y = "PCA Axis 2; 13.9%")
 
 
-
-#### Chem Cap ####
+#### Chem CAP ####
 
 
 
