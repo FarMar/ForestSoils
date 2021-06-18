@@ -308,10 +308,26 @@ ggplot(metals_plot) +
     y = "PCA Axis 2; 13.9%")
 
 
-#### Chem CAP ####
-
-
-
 #### BW ####
-
-
+ggplot(sum) +
+  stat_halfeye(aes(y = BD0_30),
+    adjust = .5,
+    width = .6,
+    .width = 0,
+    justification = -.3,
+    point_colour = NA,
+    fill = "brown") +
+  geom_boxplot(aes(y = BD0_30),
+    width = .25,
+    outlier.shape = NA
+  ) +
+  geom_point(aes(x = 0, y = BD0_30, colour = Transect),
+             size = 5,
+             alpha = .9,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+             ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic()
