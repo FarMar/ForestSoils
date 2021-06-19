@@ -322,12 +322,54 @@ ggplot(sum) +
     outlier.shape = NA
   ) +
   geom_point(aes(x = 0, y = BD0_30, colour = Transect),
+             shape = 21,
+             stroke = 2,
              size = 5,
-             alpha = .9,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
              ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
-  theme_classic()
+  theme_classic() +
+  labs(y = expression ("Bulk density g"~cm^-3),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+
+
+
+
+#### Colours ####
+# No margin
+par(mar=c(0,0,1,0))
+
+# Classic palette Spectral, with 11 colors
+coul <- brewer.pal(11, "Spectral") 
+# Add more colors to this palette :
+coul17 <- colorRampPalette(coul)(17)
+# Plot it
+pie(rep(1, length(coul17)), col = coul17 , main="") 
+
+
+# Classic palette Spectral, with 11 colors
+coul <- brewer.pal(11, "Spectral") 
+# Add more colors to this palette :
+coul11 <- colorRampPalette(coul)(11)
+# Plot it
+pie(rep(1, length(coul11)), col = coul11 , main="") 
+
+# Classic palette Spectral, with 11 colors
+coul <- brewer.pal(11, "Spectral") 
+# Add more colors to this palette :
+coul8 <- colorRampPalette(coul)(8)
+# Plot it
+pie(rep(1, length(coul8)), col = coul8 , main="") 
+
+# Output the palettes for reference
+x<-list(coul8, coul11, coul17)
+y<-tibble(column1= map_chr(x, str_flatten, " "))
+write_csv(y, "colours.csv")
