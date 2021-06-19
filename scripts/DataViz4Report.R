@@ -33,6 +33,38 @@ library(ape)
 library(RVAideMemoire)
 library(BiodiversityR)
 
+#### Colours ####
+# No margin
+par(mar=c(0,0,1,0))
+
+# Classic palette Spectral, with 11 colors
+coul <- brewer.pal(11, "Spectral") 
+# Add more colors to this palette :
+coul17 <- colorRampPalette(coul)(17)
+# Plot it
+pie(rep(1, length(coul17)), col = coul17 , main="") 
+
+
+# Classic palette Spectral, with 11 colors
+coul <- brewer.pal(11, "Spectral") 
+# Add more colors to this palette :
+coul11 <- colorRampPalette(coul)(11)
+# Plot it
+pie(rep(1, length(coul11)), col = coul11 , main="") 
+
+# Classic palette Spectral, with 11 colors
+coul <- brewer.pal(11, "Spectral") 
+# Add more colors to this palette :
+coul8 <- colorRampPalette(coul)(8)
+# Plot it
+pie(rep(1, length(coul8)), col = coul8 , main="") 
+
+# Output the palettes for reference
+x<-list(coul8, coul11, coul17)
+y<-tibble(column1= map_chr(x, str_flatten, " "))
+write_csv(y, "colours.csv")
+
+
 #### data in ####
 sum <- read_csv("data/processed/summary.csv")
 all <- read_csv("data/processed/ChemAll_adm_OLremPLFA.csv")
@@ -309,19 +341,22 @@ ggplot(metals_plot) +
 
 
 #### BW ####
-ggplot(sum) +
-  stat_halfeye(aes(y = BD0_30),
+
+# Landscape data plots
+
+RTHeight <- ggplot(sum) +
+  stat_halfeye(aes(y = RTHeight),
     adjust = .5,
     width = .6,
     .width = 0,
     justification = -.3,
     point_colour = NA,
-    fill = "brown") +
-  geom_boxplot(aes(y = BD0_30),
+    fill = "#9E0142") +
+  geom_boxplot(aes(y = RTHeight),
     width = .25,
     outlier.shape = NA
   ) +
-  geom_point(aes(x = 0, y = BD0_30, colour = Transect),
+  geom_point(aes(x = 0, y = RTHeight, colour = Transect),
              shape = 21,
              stroke = 2,
              size = 5,
@@ -332,7 +367,298 @@ ggplot(sum) +
              ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
-  labs(y = expression ("Bulk density g"~cm^-3),
+  labs(y = "Relative height in toposequence (m)",
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+TWI <- ggplot(sum) +
+  stat_halfeye(aes(y = TWI),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#D53E4F") +
+  geom_boxplot(aes(y = TWI),
+               width = .25,
+               outlier.shape = NA
+  ) +
+  geom_point(aes(x = 0, y = TWI, colour = Transect),
+             shape = 21,
+             stroke = 2,
+             size = 5,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = "Topographic wetness index",
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+TPI <- ggplot(sum) +
+  stat_halfeye(aes(y = TPI),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#F46D43") +
+  geom_boxplot(aes(y = TPI),
+               width = .25,
+               outlier.shape = NA
+  ) +
+  geom_point(aes(x = 0, y = TPI, colour = Transect),
+             shape = 21,
+             stroke = 2,
+             size = 5,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = "Topographic position index",
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+Slope <- ggplot(sum) +
+  stat_halfeye(aes(y = Slope),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FDAE61") +
+  geom_boxplot(aes(y = Slope),
+               width = .25,
+               outlier.shape = NA
+  ) +
+  geom_point(aes(x = 0, y = Slope, colour = Transect),
+             shape = 21,
+             stroke = 2,
+             size = 5,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = "Slope",
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+planCurv <- ggplot(sum) +
+  stat_halfeye(aes(y = planCurv),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FEE08B") +
+  geom_boxplot(aes(y = planCurv),
+               width = .25,
+               outlier.shape = NA
+  ) +
+  geom_point(aes(x = 0, y = planCurv, colour = Transect),
+             shape = 21,
+             stroke = 2,
+             size = 5,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = "Plan curvature",
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+proCurv <- ggplot(sum) +
+  stat_halfeye(aes(y = proCurv),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FFFFBF") +
+  geom_boxplot(aes(y = proCurv),
+               width = .25,
+               outlier.shape = NA
+  ) +
+  geom_point(aes(x = 0, y = proCurv, colour = Transect),
+             shape = 21,
+             stroke = 2,
+             size = 5,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = "Profile curvature",
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+NDVI <- ggplot(all) +
+  stat_halfeye(aes(y = NDVI),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#E6F598") +
+  geom_boxplot(aes(y = NDVI),
+               width = .25,
+               outlier.shape = NA
+  ) +
+  geom_point(aes(x = 0, y = NDVI, colour = Transect),
+             shape = 21,
+             stroke = 2,
+             size = 5,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = "Normalised difference vegetation index (NDVI)",
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+Wet <- ggplot(all) +
+  stat_halfeye(aes(y = Wet),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#ABDDA4") +
+  geom_boxplot(aes(y = Wet),
+               width = .25,
+               outlier.shape = NA
+  ) +
+  geom_point(aes(x = 0, y = Wet, colour = Transect),
+             shape = 21,
+             stroke = 2,
+             size = 5,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = "Soil moisture by synthetic aperture radar (Sentinel)",
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+Moisture <- ggplot(all) +
+  stat_halfeye(aes(y = Moisture),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#66C2A5") +
+  geom_boxplot(aes(y = Moisture),
+               width = .25,
+               outlier.shape = NA
+  ) +
+  geom_point(aes(x = 0, y = Moisture, colour = Transect),
+             shape = 21,
+             stroke = 2,
+             size = 5,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Soil moisture (g"~g^-1~" dry weight)"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+WHC <- ggplot(sum) +
+  stat_halfeye(aes(y = WHC),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#3288BD") +
+  geom_boxplot(aes(y = WHC),
+               width = .25,
+               outlier.shape = NA
+  ) +
+  geom_point(aes(x = 0, y = WHC, colour = Transect),
+             shape = 21,
+             stroke = 2,
+             size = 5,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Water holding capacity (g"~g^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+BD0_30 <- ggplot(sum) +
+  stat_halfeye(aes(y = BD0_30),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#5E4FA2") +
+  geom_boxplot(aes(y = BD0_30),
+               width = .25,
+               outlier.shape = NA
+  ) +
+  geom_point(aes(x = 0, y = BD0_30, colour = Transect),
+             shape = 21,
+             stroke = 2,
+             size = 5,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Bulk density (g"~cm^-3~")"),
        colour = "Toposequence") +
   theme(axis.title.x=element_blank(),
         axis.text.x=element_blank(),
@@ -343,33 +669,13 @@ ggplot(sum) +
 
 
 
-#### Colours ####
-# No margin
-par(mar=c(0,0,1,0))
-
-# Classic palette Spectral, with 11 colors
-coul <- brewer.pal(11, "Spectral") 
-# Add more colors to this palette :
-coul17 <- colorRampPalette(coul)(17)
-# Plot it
-pie(rep(1, length(coul17)), col = coul17 , main="") 
 
 
-# Classic palette Spectral, with 11 colors
-coul <- brewer.pal(11, "Spectral") 
-# Add more colors to this palette :
-coul11 <- colorRampPalette(coul)(11)
-# Plot it
-pie(rep(1, length(coul11)), col = coul11 , main="") 
 
-# Classic palette Spectral, with 11 colors
-coul <- brewer.pal(11, "Spectral") 
-# Add more colors to this palette :
-coul8 <- colorRampPalette(coul)(8)
-# Plot it
-pie(rep(1, length(coul8)), col = coul8 , main="") 
+#y = expression ("Bulk density g"~cm^-3)
 
-# Output the palettes for reference
-x<-list(coul8, coul11, coul17)
-y<-tibble(column1= map_chr(x, str_flatten, " "))
-write_csv(y, "colours.csv")
+
+
+
+
+
