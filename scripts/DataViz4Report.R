@@ -32,6 +32,7 @@ library(vegan)
 library(ape)
 library(RVAideMemoire)
 library(BiodiversityR)
+library(patchwork)
 
 #### Colours ####
 # No margin
@@ -352,19 +353,20 @@ RTHeight <- ggplot(sum) +
     justification = -.3,
     point_colour = NA,
     fill = "#9E0142") +
-  geom_boxplot(aes(y = RTHeight),
-    width = .25,
-    outlier.shape = NA
-  ) +
-  geom_point(aes(x = 0, y = RTHeight, colour = Transect),
+    geom_point(aes(x = 0, y = RTHeight, colour = Transect),
              shape = 21,
-             stroke = 2,
-             size = 5,
+             stroke = 1,
+             size = 3,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
              ) +
+  geom_boxplot(aes(y = RTHeight),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
   labs(y = "Relative height in toposequence (m)",
@@ -381,18 +383,19 @@ TWI <- ggplot(sum) +
                justification = -.3,
                point_colour = NA,
                fill = "#D53E4F") +
-  geom_boxplot(aes(y = TWI),
-               width = .25,
-               outlier.shape = NA
-  ) +
-  geom_point(aes(x = 0, y = TWI, colour = Transect),
+    geom_point(aes(x = 0, y = TWI, colour = Transect),
              shape = 21,
-             stroke = 2,
-             size = 5,
+             stroke = 1,
+             size = 3,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
+  ) +
+  geom_boxplot(aes(y = TWI),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
   ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
@@ -411,18 +414,19 @@ TPI <- ggplot(sum) +
                justification = -.3,
                point_colour = NA,
                fill = "#F46D43") +
-  geom_boxplot(aes(y = TPI),
-               width = .25,
-               outlier.shape = NA
-  ) +
-  geom_point(aes(x = 0, y = TPI, colour = Transect),
+    geom_point(aes(x = 0, y = TPI, colour = Transect),
              shape = 21,
-             stroke = 2,
-             size = 5,
+             stroke = 1,
+             size = 3,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
+  ) +
+  geom_boxplot(aes(y = TPI),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
   ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
@@ -440,18 +444,19 @@ Slope <- ggplot(sum) +
                justification = -.3,
                point_colour = NA,
                fill = "#FDAE61") +
-  geom_boxplot(aes(y = Slope),
-               width = .25,
-               outlier.shape = NA
-  ) +
   geom_point(aes(x = 0, y = Slope, colour = Transect),
              shape = 21,
-             stroke = 2,
-             size = 5,
+             stroke = 1,
+             size = 3,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
+  ) +
+  geom_boxplot(aes(y = Slope),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
   ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
@@ -469,18 +474,19 @@ planCurv <- ggplot(sum) +
                justification = -.3,
                point_colour = NA,
                fill = "#FEE08B") +
-  geom_boxplot(aes(y = planCurv),
-               width = .25,
-               outlier.shape = NA
-  ) +
   geom_point(aes(x = 0, y = planCurv, colour = Transect),
              shape = 21,
-             stroke = 2,
-             size = 5,
+             stroke = 1,
+             size = 3,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
+  ) +
+  geom_boxplot(aes(y = planCurv),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
   ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
@@ -498,18 +504,19 @@ proCurv <- ggplot(sum) +
                justification = -.3,
                point_colour = NA,
                fill = "#FFFFBF") +
-  geom_boxplot(aes(y = proCurv),
-               width = .25,
-               outlier.shape = NA
-  ) +
   geom_point(aes(x = 0, y = proCurv, colour = Transect),
              shape = 21,
-             stroke = 2,
-             size = 5,
+             stroke = 1,
+             size = 3,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
+  ) +
+  geom_boxplot(aes(y = proCurv),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
   ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
@@ -527,18 +534,19 @@ NDVI <- ggplot(all) +
                justification = -.3,
                point_colour = NA,
                fill = "#E6F598") +
-  geom_boxplot(aes(y = NDVI),
-               width = .25,
-               outlier.shape = NA
-  ) +
   geom_point(aes(x = 0, y = NDVI, colour = Transect),
              shape = 21,
-             stroke = 2,
-             size = 5,
+             stroke = 1,
+             size = 3,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
+  ) +
+  geom_boxplot(aes(y = NDVI),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
   ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
@@ -556,18 +564,19 @@ Wet <- ggplot(all) +
                justification = -.3,
                point_colour = NA,
                fill = "#ABDDA4") +
-  geom_boxplot(aes(y = Wet),
-               width = .25,
-               outlier.shape = NA
-  ) +
   geom_point(aes(x = 0, y = Wet, colour = Transect),
              shape = 21,
-             stroke = 2,
-             size = 5,
+             stroke = 1,
+             size = 3,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
+  ) +
+  geom_boxplot(aes(y = Wet),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
   ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
@@ -585,18 +594,19 @@ Moisture <- ggplot(all) +
                justification = -.3,
                point_colour = NA,
                fill = "#66C2A5") +
-  geom_boxplot(aes(y = Moisture),
-               width = .25,
-               outlier.shape = NA
-  ) +
   geom_point(aes(x = 0, y = Moisture, colour = Transect),
              shape = 21,
-             stroke = 2,
-             size = 5,
+             stroke = 1,
+             size = 3,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
+  ) +
+  geom_boxplot(aes(y = Moisture),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
   ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
@@ -614,18 +624,19 @@ WHC <- ggplot(sum) +
                justification = -.3,
                point_colour = NA,
                fill = "#3288BD") +
-  geom_boxplot(aes(y = WHC),
-               width = .25,
-               outlier.shape = NA
-  ) +
   geom_point(aes(x = 0, y = WHC, colour = Transect),
              shape = 21,
-             stroke = 2,
-             size = 5,
+             stroke = 1,
+             size = 3,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
+  ) +
+  geom_boxplot(aes(y = WHC),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
   ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
@@ -643,18 +654,19 @@ BD0_30 <- ggplot(sum) +
                justification = -.3,
                point_colour = NA,
                fill = "#5E4FA2") +
-  geom_boxplot(aes(y = BD0_30),
-               width = .25,
-               outlier.shape = NA
-  ) +
   geom_point(aes(x = 0, y = BD0_30, colour = Transect),
              shape = 21,
-             stroke = 2,
-             size = 5,
+             stroke = 1,
+             size = 3,
              position = position_jitter(
                seed = 1,
                width = 0.1
              )
+  ) +
+  geom_boxplot(aes(y = BD0_30),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
   ) +
   scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
   theme_classic() +
@@ -665,7 +677,12 @@ BD0_30 <- ggplot(sum) +
         axis.ticks.x=element_blank())
 
 
-
+RTHeight + TWI + TPI + Slope + planCurv + proCurv + NDVI + 
+  Wet + Moisture + WHC + BD0_30 + guide_area() +
+  plot_layout(ncol = 6, guides = 'collect') +
+  plot_annotation(tag_levels = 'a') & 
+  theme(plot.tag.position = c(1, 1),
+        plot.tag = element_text(size = 16, hjust = 4, vjust = 2))
 
 
 
