@@ -684,15 +684,542 @@ RTHeight + TWI + TPI + Slope + planCurv + proCurv + NDVI +
   theme(plot.tag.position = c(1, 1),
         plot.tag = element_text(size = 16, hjust = 4, vjust = 2))
 
-
-
-
-
-
 #y = expression ("Bulk density g"~cm^-3)
 
+# Chem data
+pHc <- ggplot(all) +
+  stat_halfeye(aes(y = pHc),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#9E0142") +
+  geom_point(aes(x = 0, y = pHc, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = pHc),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression (~pH[CaCl[2]]),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+EC <- ggplot(all) +
+  stat_halfeye(aes(y = EC),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#C0247A") +
+  geom_point(aes(x = 0, y = EC, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = EC),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Electrical conductivity (dS "~m^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+CEC <- ggplot(sum) +
+  stat_halfeye(aes(y = CEC),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#DC494C") +
+  geom_point(aes(x = 0, y = CEC, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = CEC),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Cation exchange capacity ("~cmol^+~" "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+PC1 <- ggplot(metals_plot) +
+  stat_halfeye(aes(y = Comp.1),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#F06744") +
+  geom_point(aes(x = 0, y = Comp.1, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = Comp.1),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Total elements principal component 1, 58.3% of variance"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+PC2 <- ggplot(metals_plot) +
+  stat_halfeye(aes(y = Comp.2),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#F88D51") +
+  geom_point(aes(x = 0, y = Comp.2, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = Comp.2),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Total elements principal component 2, 13.9% of variance"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+P <- ggplot(sum) +
+  stat_halfeye(aes(y = P),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FDB466") +
+  geom_point(aes(x = 0, y = P, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = P),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Total phosphorus (mg "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+K <- ggplot(sum) +
+  stat_halfeye(aes(y = K),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FDD380") +
+  geom_point(aes(x = 0, y = K, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = K),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Total potassium (mg "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+S <- ggplot(sum) +
+  stat_halfeye(aes(y = S),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FEEB9E") +
+  geom_point(aes(x = 0, y = S, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = S),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Total sulphur (mg "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+TotOC <- sum %>% drop_na(TotOC_mean) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = TotOC_mean),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FFFFBF") +
+  geom_point(aes(x = 0, y = TotOC_mean, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = TotOC_mean),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Total organic carbon (g "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+TotN <- sum %>% drop_na(TotN_mean) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = TotN_mean),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#EFF8A6") +
+  geom_point(aes(x = 0, y = TotN_mean, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = TotN_mean),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Total nitrogen (g "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
 
 
 
+CN <- sum %>% drop_na(CN_mean) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = CN_mean),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#D7EF9B") +
+  geom_point(aes(x = 0, y = CN_mean, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = CN_mean),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("C:N ratio"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
 
+
+
+d13C <- sum %>% drop_na(d13C_mean) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = d13C_mean),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#B2E0A2") +
+  geom_point(aes(x = 0, y = d13C_mean, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = d13C_mean),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression (paste(delta^{13}, "C (\u2030)")),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+d15N <- sum %>% drop_na(d15N_mean) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = d15N_mean),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#88CFA4") +
+  geom_point(aes(x = 0, y = d15N_mean, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = d15N_mean),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression (paste(delta^{15}, "N (\u2030)")),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+POC <- sum %>% drop_na(POC_mean) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = POC_mean),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#5FBAA8") +
+  geom_point(aes(x = 0, y = POC_mean, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = POC_mean),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Particulate organic carbon (g "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+HOC <- sum %>% drop_na(HOC_mean) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = HOC_mean),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#3F96B7") +
+  geom_point(aes(x = 0, y = HOC_mean, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = HOC_mean),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Humus organic carbon (g "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+ROC <- sum %>% drop_na(ROC_mean) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = ROC_mean),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#4272B2") +
+  geom_point(aes(x = 0, y = ROC_mean, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = ROC_mean),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Resistant organic carbon (g "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+Vuln <- sum %>% drop_na(Vuln_mean) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = Vuln_mean),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#5E4FA2") +
+  geom_point(aes(x = 0, y = Vuln_mean, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = Vuln_mean),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Organic carbon vulnerability"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
 
