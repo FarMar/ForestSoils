@@ -1223,3 +1223,274 @@ Vuln <- sum %>% drop_na(Vuln_mean) %>% # Neat little hack to drop NA samples
         axis.text.x=element_blank(),
         axis.ticks.x=element_blank())
 
+
+pHc + EC + CEC + PC1 + PC2 + P + K + S + TotOC +
+  TotN + CN + d13C + d15N + POC + HOC + ROC + Vuln + guide_area() +
+  plot_layout(ncol = 6, guides = 'collect') +
+  plot_annotation(tag_levels = 'a') & 
+  theme(plot.tag.position = c(1, 1),
+        plot.tag = element_text(size = 16, hjust = 2, vjust = 2))
+
+
+### Dynamic 
+NO3 <- all %>% drop_na(NO3) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = NO3),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#9E0142") +
+  geom_point(aes(x = 0, y = NO3, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = NO3),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Extractable "~NO[3]^{"-"}~"-N (mg "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+NH4 <- all %>% drop_na(NH4) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = NH4),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#E25249") +
+  geom_point(aes(x = 0, y = NH4, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = NH4),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Extractable "~NH[4]^{"+"}~"-N (mg "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+FAA <- all %>% drop_na(FAA) %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = FAA),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FBA45C") +
+  geom_point(aes(x = 0, y = FAA, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = FAA),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Extractable free amino acid-N (mg "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+DON <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = DON),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FEE899") +
+  geom_point(aes(x = 0, y = DON, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = DON),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Dissolved organic N (mg "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+DOC <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = DOC),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#EDF7A3") +
+  geom_point(aes(x = 0, y = DOC, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = DOC),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Dissolved organic C (mg "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+MBC <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = MBC),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#A1D9A4") +
+  geom_point(aes(x = 0, y = MBC, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = MBC),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Microbial biomass C (mg "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+MBN <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = MBN),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#48A0B2") +
+  geom_point(aes(x = 0, y = MBN, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = MBN),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Microbial biomass N (mg "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+AvailP <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = AvailP),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#5E4FA2") +
+  geom_point(aes(x = 0, y = AvailP, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = AvailP),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Olsen-extractable P (mg "~kg^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+NO3 + NH4 + FAA + DON + DOC + MBC + MBN + AvailP +
+  plot_layout(ncol = 4, guides = 'collect') +
+  plot_annotation(tag_levels = 'a') & 
+  theme(plot.tag.position = c(0, 1),
+        plot.tag = element_text(size = 16, hjust = -28, vjust = 2))
