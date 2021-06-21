@@ -1493,4 +1493,367 @@ NO3 + NH4 + FAA + DON + DOC + MBC + MBN + AvailP +
   plot_layout(ncol = 4, guides = 'collect') +
   plot_annotation(tag_levels = 'a') & 
   theme(plot.tag.position = c(0, 1),
-        plot.tag = element_text(size = 16, hjust = -28, vjust = 2))
+        plot.tag = element_text(size = 16, hjust = -12, vjust = 2))
+
+
+### Microbial
+Proteolysis <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = Proteolysis),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#9E0142") +
+  geom_point(aes(x = 0, y = Proteolysis, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = Proteolysis),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Proteolysis rate (mg AA-N"~kg^-1~h^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+AAMin_k1 <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = AAMin_k1),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#D53E4F") +
+  geom_point(aes(x = 0, y = AAMin_k1, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = AAMin_k1),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Rate of initial AA mineralisation ("~h^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+MicY <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = MicY),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#F46D43") +
+  geom_point(aes(x = 0, y = MicY, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = MicY),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Microbial yield"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+TotalPLFA <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = TotalPLFA),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FDAE61") +
+  geom_point(aes(x = 0, y = TotalPLFA, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = TotalPLFA),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Total PLFA (nmol "~g^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+Bac <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = Bac),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FEE08B") +
+  geom_point(aes(x = 0, y = Bac, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = Bac),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Bacterial PLFA (nmol "~g^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+Fun <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = Fun),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#FFFFBF") +
+  geom_point(aes(x = 0, y = Fun, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = Fun),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Fungal PLFA (nmol "~g^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+Gpos <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = Gpos),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#E6F598") +
+  geom_point(aes(x = 0, y = Gpos, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = Gpos),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("G+ bacterial PLFA (nmol "~g^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+Gneg <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = Gneg),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#ABDDA4") +
+  geom_point(aes(x = 0, y = Gneg, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = Gneg),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("G- bacterial PLFA (nmol "~g^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+Act <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = Act),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#66C2A5") +
+  geom_point(aes(x = 0, y = Act, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = Act),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Actinomycete PLFA (nmol "~g^-1~")"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+F_B <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = F_B),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#3288BD") +
+  geom_point(aes(x = 0, y = F_B, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = F_B),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Fungal:Bacterial ratio"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+Gp_Gn <- all %>% drop_na() %>% # Neat little hack to drop NA samples
+  ggplot() + # Also need to drop the df call here
+  stat_halfeye(aes(y = Gp_Gn),
+               adjust = .5,
+               width = .6,
+               .width = 0,
+               justification = -.3,
+               point_colour = NA,
+               fill = "#5E4FA2") +
+  geom_point(aes(x = 0, y = Gp_Gn, colour = Transect),
+             shape = 21,
+             stroke = 1,
+             size = 3,
+             position = position_jitter(
+               seed = 1,
+               width = 0.1
+             )
+  ) +
+  geom_boxplot(aes(y = Gp_Gn),
+               alpha = 0,
+               width = .25,
+               outlier.shape = NA
+  ) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  labs(y = expression ("Gram+:Gram- ratio"),
+       colour = "Toposequence") +
+  theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank())
+
+
+
+
+Proteolysis + AAMin_k1 + MicY + TotalPLFA + Bac + Fun + 
+  Gpos + Gneg + Act + F_B + Gp_Gn + guide_area() +
+  plot_layout(ncol = 6, guides = 'collect') +
+  plot_annotation(tag_levels = 'a') & 
+  theme(plot.tag.position = c(1, 1),
+        plot.tag = element_text(size = 16, hjust = 4, vjust = 2))
