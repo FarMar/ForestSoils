@@ -1849,11 +1849,77 @@ Gp_Gn <- all %>% drop_na() %>% # Neat little hack to drop NA samples
         axis.ticks.x=element_blank())
 
 
-
-
 Proteolysis + AAMin_k1 + MicY + TotalPLFA + Bac + Fun + 
   Gpos + Gneg + Act + F_B + Gp_Gn + guide_area() +
   plot_layout(ncol = 6, guides = 'collect') +
   plot_annotation(tag_levels = 'a') & 
   theme(plot.tag.position = c(1, 1),
         plot.tag = element_text(size = 16, hjust = 4, vjust = 2))
+
+#### xy plots ####
+
+# Add plot position
+sum %<>% group_by(Transect) %>% 
+  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
+  ungroup() %>%
+  relocate(PlotPos, .after = Plot) %>% 
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun, PlotPos), as.factor)) 
+str(sum)
+
+# isotopes
+#CN
+cn_c <- ggplot(sum) + 
+  geom_point(aes(x=CN_mean, y=d13C_mean, colour = PlotPos), size = 3) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  labs(
+    x = "C:N ratio",
+    y = expression (paste(delta^{13}, "C (\u2030)")),
+    colour = "Plot position")
+
+cn_n <- ggplot(sum) + 
+  geom_point(aes(x=CN_mean, y=d15N_mean, colour = PlotPos), size = 3) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  labs(
+    x = "C:N ratio",
+    y = expression (paste(delta^{15}, "N (\u2030)")),
+    colour = "Plot position")
+#vuln
+vuln_c <- ggplot(sum) + 
+  geom_point(aes(x=Vuln_mean, y=d13C_mean, colour = PlotPos), size = 3) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  labs(
+    x = "SOC vulnerability",
+    y = expression (paste(delta^{13}, "C (\u2030)")),
+    colour = "Plot position")
+
+vuln_n <- ggplot(sum) + 
+  geom_point(aes(x=Vuln_mean, y=d15N_mean, colour = PlotPos), size = 3) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  labs(
+    x = "SOC vulnerability",
+    y = expression (paste(delta^{15}, "N (\u2030)")),
+    colour = "Plot position")
+#iso only
+iso <- ggplot(sum) + 
+  geom_point(aes(x=d13C_mean, y=d15N_mean, colour = PlotPos), size = 3) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  labs(
+    x = expression (paste(delta^{13}, "C (\u2030)")),
+    y = expression (paste(delta^{15}, "N (\u2030)")),
+    colour = "Plot position")
+
+cn_c + cn_n + iso + vuln_c + vuln_n + guide_area() +
+  plot_layout(ncol = 3, guides = 'collect') +
+  plot_annotation(tag_levels = 'a') & 
+  theme(plot.tag.position = c(0, 1),
+        plot.tag = element_text(size = 16, hjust = -5, vjust = 1))
