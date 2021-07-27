@@ -2028,3 +2028,136 @@ ggplot(bgc_points) +
   labs(
     x = "PCoA Axis 1; 25.6%",
     y = "PCoA Axis 2; 16.2%")
+
+
+# Permanova
+set.seed(1983)
+perm_bgc <- adonis2(distbgc~Transect+PlotPos, data = stbgc_mean, permutations = 9999, method = "euclidean")
+perm_bgc #strong impact of transect and plot
+permpt_bgc <- pairwise.perm.manova(distbgc, stbgc_mean$Transect, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpt_bgc #.098 is lowest possible  - several pairwise comps have this
+permpp_bgc <- pairwise.perm.manova(distbgc, stbgc_mean$PlotPos, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpp_bgc #4 is sig diff from 1&2. 3 borderline diff from 1&2. 1 borderline diff from 2
+
+
+# CAP by transect
+stbgc_mean <- as.data.frame(stbgc_mean) 
+cap_bgct <- CAPdiscrim(distbgc~Transect, data = stbgc_mean, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 999)
+cap_bgct <- add.spec.scores(cap_bgct, dbgc, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+saveRDS(cap_bgct, file = "data/processed/CAP_bgct.rds")
+
+
+round(cap_bgct$F/sum(cap_bgct$F), digits=3)
+barplot(cap_bgct$F/sum(cap_bgct$F))
+
+cap_bgct_points <- bind_cols((as.data.frame(cap_bgct$x)), fbgc) 
+glimpse(cap_bgct_points)
+
+cap_bgct_arrows <- as.data.frame(cap_bgct$cproj*5) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+ggplot(cap_bgct_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = PlotPos), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_bgct_arrows,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_bgct_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 56.7%",
+    y = "CAP Axis 2; 23.0%")
+
+# CAP by transect + spider
+bgc_centt <- aggregate(cbind(LD1, LD2) ~ Transect, data = cap_bgct_points, FUN = mean)
+
+bgc_segst <- merge(cap_bgct_points, setNames(bgc_centt, c('Transect', 'oLD1', 'oLD2')), by = 'Transect', sort = FALSE)
+
+cap_bgct_fig <- ggplot(cap_bgct_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = PlotPos), size = 3, alpha = .6) +
+  geom_segment(data = bgc_segst, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Transect), alpha = .7, size = .25) +
+  geom_point(data = bgc_centt, mapping = aes(x = LD1, y = LD2, colour = Transect), size = 5) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_bgct_arrows,
+               x = 0, y = 0, alpha = 0.3,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_bgct_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 56.7%",
+    y = "CAP Axis 2; 23.0%",
+    colour = "Toposequence",
+    shape = "Plot position")
+
+
+# CAP by plotpos
+stbgc_mean <- as.data.frame(stbgc_mean) 
+cap_bgcp <- CAPdiscrim(distbgc~PlotPos, data = stbgc_mean, axes = 10, m = 3, mmax = 10, add = FALSE, permutations = 999)
+cap_bgcp <- add.spec.scores(cap_bgcp, dbgc, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+saveRDS(cap_bgcp, file = "data/processed/CAP_bgcp.rds")
+round(cap_bgcp$F/sum(cap_bgcp$F), digits=3)
+barplot(cap_bgcp$F/sum(cap_bgcp$F))
+
+cap_bgcp_points <- bind_cols((as.data.frame(cap_bgcp$x)), fbgc) 
+glimpse(cap_bgcp_points)
+
+cap_bgcp_arrows <- as.data.frame(cap_bgcp$cproj*3) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+ggplot(cap_bgcp_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = PlotPos), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_bgcp_arrows,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_bgcp_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 76.3%",
+    y = "CAP Axis 2; 23.7%")
+
+# CAP by plot + spider
+bgc_centp <- aggregate(cbind(LD1, LD2) ~ PlotPos, data = cap_bgcp_points, FUN = mean)
+
+bgc_segsp <- merge(cap_bgcp_points, setNames(bgc_centp, c('PlotPos', 'oLD1', 'oLD2')), by = 'PlotPos', sort = FALSE)
+
+cap_bgcpfig <- ggplot(cap_bgcp_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = PlotPos), size = 3, alpha = .6) +
+  geom_segment(data = bgc_segsp, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = PlotPos), alpha = .9, size = .3) +
+  geom_point(data = bgc_centp, mapping = aes(x = LD1, y = LD2, colour = PlotPos), size = 5) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_bgcp_arrows,
+               x = 0, y = 0, alpha = 0.3,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_bgcp_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 76.3%",
+    y = "CAP Axis 2; 23.7%",
+    colour = "Plot position")
+
+cap_bgct_fig + cap_bgcpfig +
+  plot_layout(ncol = 1) +
+  plot_annotation(tag_levels = 'a') & 
+  theme(plot.tag.position = c(0, 1),
+        plot.tag = element_text(size = 16, hjust = -5, vjust = 1))
