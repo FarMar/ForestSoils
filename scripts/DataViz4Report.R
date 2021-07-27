@@ -1923,3 +1923,108 @@ cn_c + cn_n + iso + vuln_c + vuln_n + guide_area() +
   plot_annotation(tag_levels = 'a') & 
   theme(plot.tag.position = c(0, 1),
         plot.tag = element_text(size = 16, hjust = -5, vjust = 1))
+
+#### local scale ####
+#### biogeochem ####
+
+t1_summary <- read_csv("data/processed/summary.csv")
+t1_summary <- t1_summary %>% 
+  group_by(Transect) %>% 
+  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
+  ungroup() %>% 
+  relocate(PlotPos, .after = Plot) %>% 
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun, PlotPos), as.factor))
+str(t1_summary)
+t1_summary <- t1_summary %>% 
+  relocate(where(is.character))
+
+bgc_mean <- t1_summary %>% 
+  select(UniqueID, Transect, Plot, PlotPos, Easting, Northing, Height, RHeight, RTHeight, Inun,
+         Clay, CEC, WHC, BD0_30, NDVI_mean, Wet_mean, Moisture_mean, pHc_mean, EC_mean, AvailP_mean, CN_mean, Vuln_mean,
+         d13C_mean, d15N_mean, DOC_mean, NO3_mean, NH4_mean, FAA_mean, Proteolysis_mean,
+         AAMin_k1_mean, DON_mean, MBC_mean, MBN_mean, MicY_mean)
+
+#pre-prep - PCA of total emlements to reduce dimenstions
+tot_elms <- t1_summary %>% 
+  select(47:66) %>% 
+  select(!c(As, B, Cd, Mo, Sb, Se))
+chart.Correlation(tot_elms)
+
+ttot_elms <- tot_elms %>% 
+  mutate(P = log1p(P),
+         Na = log1p(Na),
+         Mg = log1p(Mg),
+         K = log1p(K),
+         Co = log1p(Co),
+         Ca = log1p(Ca))
+chart.Correlation(ttot_elms)
+
+pca_elms <- princomp(ttot_elms, cor = TRUE, scores = TRUE)
+biplot(pca_elms, choices = c(1,2))
+summary(pca_elms) #PC1 = 59.2%, PC2 = 11.7%
+scores_elms <- as.data.frame(pca_elms[["scores"]]) %>% 
+  select(1:2)
+
+#prep
+bgc_mean <- cbind(bgc_mean, scores_elms)
+bgc_cor <- select(bgc_mean, 11:36)
+chart.Correlation(bgc_cor, histogram=TRUE, pch=19)
+
+
+tbgc_mean <- bgc_mean %>% 
+  mutate(MBN_mean = log1p(MBN_mean),
+         NH4_mean = log1p(NH4_mean),
+         AvailP_mean = log1p(AvailP_mean),
+         EC_mean = log1p(EC_mean),
+         pHc_mean = log1p(pHc_mean),
+         BD0_30 = log1p(BD0_30))
+
+stbgc_mean <- tbgc_mean %>% 
+  mutate(across(c(11:36), ~z.fn(.)))
+
+fbgc <- stbgc_mean %>% 
+  select(1:10)
+dbgc <- stbgc_mean %>% 
+  select(11:36)
+
+# PCoA
+distbgc <- vegdist(dbgc, method = "euclidean", na.rm = TRUE)
+pbgc <- pcoa(distbgc)
+pbgc$values$Relative_eig[1:10]
+barplot(pbgc$values$Relative_eig[1:10])
+
+bgc_points <- bind_cols(fbgc, (as.data.frame(pbgc$vectors)))
+
+compute.arrows = function (given_pcoa, orig_df) {
+  orig_df = orig_df #can be changed to select columns of interest only
+  n <- nrow(orig_df)
+  points.stand <- scale(given_pcoa$vectors)
+  S <- cov(orig_df, points.stand) #compute covariance of variables with all axes
+  pos_eigen = given_pcoa$values$Eigenvalues[seq(ncol(S))] #select only +ve eigenvalues
+  U <- S %*% diag((pos_eigen/(n - 1))^(-0.5)) #Standardise value of covariance
+  colnames(U) <- colnames(given_pcoa$vectors) #Get column names
+  given_pcoa$U <- U #Add values of covariates inside object
+  return(given_pcoa)
+}
+pbgc = compute.arrows(pbgc, dbgc)
+
+pbgc_arrows_df <- as.data.frame(pbgc$U*10) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+# Plot
+ggplot(bgc_points) + 
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = PlotPos), size = 6) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = pbgc_arrows_df,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = Axis.1, yend = Axis.2),
+               arrow = arrow(length = unit(3, "mm"))) +
+  ggrepel::geom_text_repel(data = pbgc_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "PCoA Axis 1; 25.6%",
+    y = "PCoA Axis 2; 16.2%")
