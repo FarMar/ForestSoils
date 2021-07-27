@@ -2161,3 +2161,379 @@ cap_bgct_fig + cap_bgcpfig +
   plot_annotation(tag_levels = 'a') & 
   theme(plot.tag.position = c(0, 1),
         plot.tag = element_text(size = 16, hjust = -5, vjust = 1))
+
+
+#### temporal ####
+OL_cor <- read_csv("data/processed/ChemAll_adm_OLrem.csv")
+OL_cor <- OL_cor %>% 
+  group_by(Transect) %>% 
+  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
+  ungroup() %>% 
+  relocate(PlotPos, .after = Plot) %>% 
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun, PlotPos), as.factor)) %>% 
+  mutate(Date = dmy(Date)) 
+str(OL_cor)
+
+plfa <- read_csv("data/working/MasterFieldDataFC_NSW - PLFAs.csv")
+plfa <- plfa %>%
+  mutate(Date = dmy(Date)) %>% 
+  group_by(Transect) %>% 
+  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
+  ungroup() %>% 
+  mutate("Sampling Period" = case_when(
+    Date >= as_date("2019-03-25") & Date <= as_date("2019-03-28") ~ "Autumn 2019",
+    Date >= as_date("2019-07-29") & Date <= as_date("2019-07-31") ~ "Winter 2019",
+    Date >= as_date("2019-11-04") & Date <= as_date("2019-11-06") ~ "At flooding",
+    Date >= as_date("2020-02-03") & Date <= as_date("2020-02-05") ~ "3 months post flood",
+    Date >= as_date("2020-10-13") & Date <= as_date("2020-10-15") ~ "11 months post flood"
+  ) 
+  ) %>% 
+  relocate("Sampling Period", .after = Date) %>% 
+  relocate(PlotPos, .after = Plot) %>% 
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun, PlotPos, "Sampling Period"), as.factor)) 
+
+plfa <- plfa %>% 
+  mutate(`Sampling Period` = fct_relevel(`Sampling Period`, #remember the back-ticks (would probably have solved factor palaver too)
+                                         "Autumn 2019",
+                                         "Winter 2019",
+                                         "At flooding",
+                                         "3 months post flood",
+                                         "11 months post flood"
+  ))
+
+str(plfa)
+
+OLP_cor <- read_csv("data/processed/ChemAll_adm_OLremPLFA.csv")
+OLP_cor <- OLP_cor %>%
+  mutate(Date = dmy(Date)) %>% 
+  group_by(Transect) %>% 
+  mutate(PlotPos = dense_rank(desc(RTHeight))) %>%
+  ungroup() %>% 
+  mutate("Sampling Period" = case_when(
+    Date >= as_date("2019-03-25") & Date <= as_date("2019-03-28") ~ "Autumn 2019",
+    Date >= as_date("2019-07-29") & Date <= as_date("2019-07-31") ~ "Winter 2019",
+    Date >= as_date("2019-11-04") & Date <= as_date("2019-11-06") ~ "At flooding",
+    Date >= as_date("2020-02-03") & Date <= as_date("2020-02-05") ~ "3 months post flood",
+    Date >= as_date("2020-10-13") & Date <= as_date("2020-10-15") ~ "11 months post flood"
+  ) 
+  ) %>% 
+  relocate("Sampling Period", .after = Date) %>% 
+  relocate(PlotPos, .after = Plot) %>% 
+  mutate(across(c(CombID, UniqueID, PrelimID, Transect, Plot, Inun, PlotPos, "Sampling Period"), as.factor)) 
+str(OLP_cor)
+
+
+OL_cor <- OL_cor %>%
+  mutate("Sampling Period" = case_when(
+    Date >= as_date("2019-03-25") & Date <= as_date("2019-03-28") ~ "Autumn 2019",
+    Date >= as_date("2019-07-29") & Date <= as_date("2019-07-31") ~ "Winter 2019",
+    Date >= as_date("2019-11-04") & Date <= as_date("2019-11-06") ~ "At flooding",
+    Date >= as_date("2020-02-03") & Date <= as_date("2020-02-05") ~ "3 months post flood",
+    Date >= as_date("2020-10-13") & Date <= as_date("2020-10-15") ~ "11 months post flood"
+  ) 
+  ) %>% 
+  relocate("Sampling Period", .after = Date) 
+OL_cor$`Sampling Period` <- as.factor(OL_cor$`Sampling Period`)
+
+str(OL_cor)
+levels(OL_cor$`Sampling Period`)
+
+OL_cor <- OL_cor %>% 
+  mutate(`Sampling Period` = fct_relevel(`Sampling Period`, #remember the back-ticks (would probably have solved factor palaver too)
+                                         "Autumn 2019",
+                                         "Winter 2019",
+                                         "At flooding",
+                                         "3 months post flood",
+                                         "11 months post flood"
+  ))
+
+temporalP <- OLP_cor %>% 
+  select(UniqueID, Date, `Sampling Period`, Transect, Plot, PlotPos, Easting, Northing, Height, RHeight, RTHeight, Inun,
+         NDVI, VH,	VV,	Wet, Moisture,	pHc,	EC, AvailP, 
+         DOC,	DTN,	NO3,	NH4,	FAA, Proteolysis,	AAMin_k1,	DON,	MBC,	
+         MBN,	MicY,	MicCN, TotalPLFA, F_B, Gp_Gn, Act_Gp)
+
+# Data for this are in `temporalP`
+glimpse(temporalP)
+temporalP %<>% relocate(Inun, .after = PlotPos)
+temporalP <- temporalP %>% 
+  mutate(Inun = fct_relevel(`Inun`,
+                            "y",
+                            "m",
+                            "n"))
+
+# Quick correlation plot for evaluation
+chart.Correlation(temporalP[, 8:36], histogram = TRUE, pch = 19)
+
+# Drop and transform
+ttemporalP <- temporalP %>% 
+  select(-c(VH, VV, DTN)) %>% 
+  mutate(across(c(Moisture, pHc, EC, AvailP, NO3, NH4, FAA, Proteolysis, DON, MBC, MBN, MicCN, TotalPLFA, F_B), ~log1p(.)))
+
+chart.Correlation(ttemporalP[, 8:33], histogram = TRUE, pch = 19)
+
+#prep
+sttemporalP <- ttemporalP %>% 
+  drop_na() %>% 
+  mutate(across(c(13:33), ~z.fn(.)))
+
+ftempP <- sttemporalP %>% 
+  select(1:12)
+dtempP <- sttemporalP %>% 
+  select(13:33)
+
+#PCoA
+disttempP <- vegdist(dtempP, method = "euclidean", na.rm = TRUE)
+ptempP <- pcoa(disttempP)
+ptempP$values$Relative_eig[1:10]
+barplot(ptempP$values$Relative_eig[1:10])
+
+tempP_points <- bind_cols(ftempP, (as.data.frame(ptempP$vectors)))
+
+compute.arrows = function (given_pcoa, orig_df) {
+  orig_df = orig_df #can be changed to select columns of interest only
+  n <- nrow(orig_df)
+  points.stand <- scale(given_pcoa$vectors)
+  S <- cov(orig_df, points.stand) #compute covariance of variables with all axes
+  pos_eigen = given_pcoa$values$Eigenvalues[seq(ncol(S))] #select only +ve eigenvalues
+  U <- S %*% diag((pos_eigen/(n - 1))^(-0.5)) #Standardise value of covariance
+  colnames(U) <- colnames(given_pcoa$vectors) #Get column names
+  given_pcoa$U <- U #Add values of covariates inside object
+  return(given_pcoa)
+}
+ptempP = compute.arrows(ptempP, dtempP)
+
+ptempP_arrows_df <- as.data.frame(ptempP$U*10) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+# Plot
+ggplot(tempP_points) + #Some separation by date, transect# seems noisy
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = Transect, shape = `Sampling Period`), size = 6) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = ptempP_arrows_df,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = Axis.1, yend = Axis.2),
+               arrow = arrow(length = unit(3, "mm"))) +
+  ggrepel::geom_text_repel(data = ptempP_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "PCoA Axis 1; 18.6%",
+    y = "PCoA Axis 2; 15.7%")
+
+ggplot(tempP_points) + #A bit more informative, definite axis1 trend of transect. Date clustering a bit more obvious
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = PlotPos, shape = `Sampling Period`), size = 6) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = ptempP_arrows_df,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = Axis.1, yend = Axis.2),
+               arrow = arrow(length = unit(3, "mm"))) +
+  ggrepel::geom_text_repel(data = ptempP_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "PCoA Axis 1; 18.6%",
+    y = "PCoA Axis 2; 15.7%")
+
+ggplot(tempP_points) + #Seems to clearly show separation
+  geom_point(aes(x=Axis.1, y=Axis.2, colour = PlotPos, shape = Inun), size = 6) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  scale_shape_manual(values = c(15, 18, 0)) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = ptempP_arrows_df,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = Axis.1, yend = Axis.2),
+               arrow = arrow(length = unit(3, "mm"))) +
+  ggrepel::geom_text_repel(data = ptempP_arrows_df, aes(x=Axis.1, y=Axis.2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "PCoA Axis 1; 18.6%",
+    y = "PCoA Axis 2; 15.7%")
+
+
+# Permanova
+set.seed(1983)
+perm_tempPtp <- adonis2(disttempP~Transect*`Sampling Period`, data = sttemporalP, permutations = 9999, method = "euclidean")
+perm_tempPtp #strong impact of transect and sampling period, no interaction
+perm_tempPpp <- adonis2(disttempP~PlotPos*`Sampling Period`, data = sttemporalP, permutations = 9999, method = "euclidean")
+perm_tempPpp #strong impact of plot position and sampling period, no interaction
+perm_tempPtpp <- adonis2(disttempP~Transect+PlotPos+`Sampling Period`, data = sttemporalP, permutations = 9999, method = "euclidean")
+perm_tempPtpp #strong impact of transect, plot position and sampling period in additive model
+permpt_tempP <- pairwise.perm.manova(disttempP, sttemporalP$Transect, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpt_tempP #All differ except 0&8, 1&8, 3&9, 5&7
+permpp_tempP <- pairwise.perm.manova(disttempP, sttemporalP$PlotPos, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permpp_tempP #All differ except 2&3
+permps_tempP <- pairwise.perm.manova(disttempP, sttemporalP$`Sampling Period`, nperm = 9999, progress = TRUE, p.method = "fdr", F = TRUE, R2 = TRUE)
+permps_tempP #All differ
+
+# CAP by transect
+sttemporalP <- as.data.frame(sttemporalP) 
+cap_temptP <- CAPdiscrim(disttempP~Transect, data = sttemporalP, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 99)
+cap_temptP <- add.spec.scores(cap_temptP, dtempP, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+round(cap_temptP$F/sum(cap_temptP$F), digits=3)
+barplot(cap_temptP$F/sum(cap_temptP$F))
+
+cap_temptP_points <- bind_cols((as.data.frame(cap_temptP$x)), ftempP) 
+glimpse(cap_temptP_points)
+
+cap_temptP_arrows <- as.data.frame(cap_temptP$cproj*5) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+ggplot(cap_temptP_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = PlotPos), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_temptP_arrows,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_temptP_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 57.0%",
+    y = "CAP Axis 2; 16.7%")
+
+# CAP by transect + spider
+tempP_centt <- aggregate(cbind(LD1, LD2) ~ Transect, data = cap_temptP_points, FUN = mean)
+
+tempP_segst <- merge(cap_temptP_points, setNames(tempP_centt, c('Transect', 'oLD1', 'oLD2')), by = 'Transect', sort = FALSE)
+
+ggplot(cap_temptP_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = Transect, shape = PlotPos), size = 3, alpha = .6) +
+  geom_segment(data = tempP_segst, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = Transect), alpha = .7, size = .25) +
+  geom_point(data = tempP_centt, mapping = aes(x = LD1, y = LD2, colour = Transect), size = 5) +
+  scale_colour_manual(values = brewer.pal(n = 10, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_temptP_arrows,
+               x = 0, y = 0, alpha = 0.3,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_temptP_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 57.0%",
+    y = "CAP Axis 2; 16.7%")
+
+
+# CAP by plotpos
+cap_temppP <- CAPdiscrim(disttempP~PlotPos, data = sttemporalP, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 9)
+cap_temppP <- add.spec.scores(cap_temppP, dtempP, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+round(cap_temppP$F/sum(cap_temppP$F), digits=3)
+barplot(cap_temppP$F/sum(cap_temppP$F))
+
+cap_temppP_points <- bind_cols((as.data.frame(cap_temppP$x)), ftempP) 
+glimpse(cap_temppP_points)
+
+cap_temppP_arrows <- as.data.frame(cap_temppP$cproj*5) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+
+ggplot(cap_temppP_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = PlotPos), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_temppP_arrows,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_temppP_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 80.2%",
+    y = "CAP Axis 2; 18.7%")
+
+# CAP by plot + spider
+tempP_centp <- aggregate(cbind(LD1, LD2) ~ PlotPos, data = cap_temppP_points, FUN = mean)
+
+tempP_segsp <- merge(cap_temppP_points, setNames(tempP_centp, c('PlotPos', 'oLD1', 'oLD2')), by = 'PlotPos', sort = FALSE)
+
+ggplot(cap_temppP_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = PlotPos), size = 3, alpha = .6) +
+  geom_segment(data = tempP_segsp, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = PlotPos), alpha = .9, size = .3) +
+  geom_point(data = tempP_centp, mapping = aes(x = LD1, y = LD2, colour = PlotPos), size = 5) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_temppP_arrows,
+               x = 0, y = 0, alpha = 0.3,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_temppP_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 80.2%",
+    y = "CAP Axis 2; 18.7%")
+
+# CAP by SamplingPeriod
+cap_temppsP <- CAPdiscrim(disttempP~`Sampling Period`, data = sttemporalP, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 9)
+cap_temppsP <- add.spec.scores(cap_temppsP, dtempP, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+round(cap_temppsP$F/sum(cap_temppsP$F), digits=3)
+barplot(cap_temppsP$F/sum(cap_temppsP$F))
+
+cap_temppsP_points <- bind_cols((as.data.frame(cap_temppsP$x)), ftempP) 
+glimpse(cap_temppsP_points)
+
+cap_temppsP_arrows <- as.data.frame(cap_temppsP$cproj*5) %>% #Pulls object from list, scales arbitrarily and makes a new df
+  rownames_to_column("variable")
+cap_temppsP_arrows
+
+ggplot(cap_temppsP_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = `Sampling Period`), size = 4) +
+  scale_colour_manual(values = brewer.pal(n = 6, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_temppsP_arrows,
+               x = 0, y = 0, alpha = 0.7,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_temppsP_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 65.2%",
+    y = "CAP Axis 2; 22.6%")
+
+# CAP by SamplingPeriod + spider
+tempP_centps <- aggregate(cbind(LD1, LD2) ~ `Sampling Period`, data = cap_temppsP_points, FUN = mean)
+
+tempP_segsps <- merge(cap_temppsP_points, setNames(tempP_centps, c('Sampling Period', 'oLD1', 'oLD2')), by = 'Sampling Period', sort = FALSE)
+
+ggplot(cap_temppsP_points) + 
+  geom_point(aes(x=LD1, y=LD2, colour = `Sampling Period`, shape = PlotPos), size = 2.5, alpha = .4) +
+  geom_segment(data = tempP_segsps, mapping = aes(x = LD1, y = LD2, xend = oLD1, yend = oLD2, colour = `Sampling Period`), alpha = .9, size = .3) +
+  geom_point(data = tempP_centps, mapping = aes(x = LD1, y = LD2, colour = `Sampling Period`), size = 8) +
+  scale_colour_manual(values = brewer.pal(n = 5, name = "Set1")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  geom_segment(data = cap_temppsP_arrows,
+               x = 0, y = 0, alpha = 0.3,
+               mapping = aes(xend = LD1, yend = LD2),
+               arrow = arrow(length = unit(2, "mm"))) +
+  ggrepel::geom_text_repel(data = cap_temppsP_arrows, aes(x=LD1, y=LD2, label = variable), 
+                           # colour = "#72177a", 
+                           size = 4
+  ) +
+  labs(
+    x = "CAP Axis 1; 65.2%",
+    y = "CAP Axis 2; 22.6%",
+    shape = "Plot position")
