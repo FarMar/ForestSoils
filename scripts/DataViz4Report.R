@@ -2541,16 +2541,253 @@ ggplot(cap_temppsP_points) +
 
 #### temporal trends ####
 #This needs to be a multi-panel figure(s) y = var, x = date, colour = plot position, thick lines and points = mean, hairlines = toposequences
-# 1) TICK -make a df with only vars of interest
-# 2) Make summary df with means by landscape position
-# 3) Plot individuals with feint lines, colours by landscape position
-# 4) Overlay points and thicker lines, colours by landscape position
+# 1) TICK - make a df with only vars of interest
+# 2) TICK - Make summary df with means by landscape position
+# 3) TICK - Plot individuals with feint lines, colours by landscape position
+# 4) TICK - Overlay points and thicker lines, colours by landscape position
 
-seasonal <- temporalP %>% select(-c(VH, VV, pHc, EC, DTN, MBC)) 
+seasonal <- temporalP %>% 
+  select(-c(VH, VV, pHc, EC, DTN, MBC)) %>% 
+  unite("Tr_PP", Transect:PlotPos, remove = FALSE)
+
 seasonal_vars <- c("Date", "Moisture", "FAA", "NO3", "DON", "NH4", "AvailP", "DOC", "NDVI", "Wet", "Proteolysis", "AAMin_k1", "Gp_Gn", "F_B", "TotalPLFA", "MBN", "MicCN", "Act_Gp", "MicY")
 
 seasonal_sum <- seasonal %>% 
   group_by(`Sampling Period`, PlotPos) %>%
   summarise(across(all_of(seasonal_vars),
-                   list(mean = ~ mean(.x, na.rm = TRUE))))
+                   list(mean = ~ mean(.x, na.rm = TRUE)))) %>% 
+  ungroup() 
   
+prot <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = Proteolysis, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = Proteolysis_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = Proteolysis_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("Proteolysis rate (mg AA-N"~kg^-1~h^-1~")"),
+    colour = "Plot position")
+
+moist <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = Moisture, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = Moisture_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = Moisture_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("Gravimetric moisture content (g "~g^-1~")"),
+    colour = "Plot position")
+
+faa <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = FAA, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = FAA_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = FAA_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("FAA-N (mg N "~kg^-1~")"),
+    colour = "Plot position")
+
+no3 <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = NO3, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = NO3_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = NO3_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression (~NO[3]^{"-"}~"-N (mg "~kg^-1~")"),
+    colour = "Plot position")
+
+nh4 <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = NH4, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = NH4_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = NH4_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression (~NH[4]^{"+"}~"-N (mg "~kg^-1~")"),
+    colour = "Plot position")
+
+don <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = DON, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = DON_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = DON_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("DON (mg "~kg^-1~")"),
+    colour = "Plot position")
+
+doc <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = DOC, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = DOC_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = DOC_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("DOC (mg "~kg^-1~")"),
+    colour = "Plot position")
+
+availp <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = AvailP, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = AvailP_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = AvailP_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("Available P (mg "~kg^-1~")"),
+    colour = "Plot position")
+
+aak1 <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = AAMin_k1, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = AAMin_k1_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = AAMin_k1_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("Amino acid mineralisation rate ("~h^-1~")"),
+    colour = "Plot position")
+
+cue <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = MicY, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = MicY_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = MicY_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("Amino acid CUE"),
+    colour = "Plot position")
+
+gpgn <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = Gp_Gn, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = Gp_Gn_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = Gp_Gn_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("G+ : G- ratio"),
+    colour = "Plot position")
+
+actgp <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = Act_Gp, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = Act_Gp_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = Act_Gp_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("Actinomycete : G+ ratio"),
+    colour = "Plot position")
+
+fb <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = F_B, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = F_B_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = F_B_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("Fungal : Bacterial ratio"),
+    colour = "Plot position")
+
+mbn <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = MBN, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = MBN_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = MBN_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("MBN (mg "~kg^-1~")"),
+    colour = "Plot position")
+
+miccn <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = MicCN, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = MicCN_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = MicCN_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("Microbial biomass C:N ratio"),
+    colour = "Plot position")
+
+totp <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = TotalPLFA, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = TotalPLFA_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = TotalPLFA_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("Total PLFA (nmol "~g^-1~")"),
+    colour = "Plot position")
+
+ndvi <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = NDVI, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = NDVI_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = NDVI_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("NDVI"),
+    colour = "Plot position")
+
+wet <- ggplot() + 
+  geom_line(data = seasonal, aes(group = Tr_PP, x = Date, y = Wet, colour = PlotPos), size = 0.05) +
+  geom_line(data = seasonal_sum, aes(x = Date_mean, y = Wet_mean, colour = PlotPos), size = 1) +
+  geom_point(data = seasonal_sum, aes(x = Date_mean, y = Wet_mean, colour = PlotPos), size = 2) +
+  scale_colour_manual(values = brewer.pal(n = 4, name = "Spectral")) +
+  theme_classic() +
+  theme(strip.background = element_blank()) +
+  scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
+  labs(
+    x = "",
+    y = expression ("Wetness index"),
+    colour = "Plot position")
