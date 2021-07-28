@@ -2484,8 +2484,9 @@ ggplot(cap_temppP_points) +
     y = "CAP Axis 2; 18.7%")
 
 # CAP by SamplingPeriod
-cap_temppsP <- CAPdiscrim(disttempP~`Sampling Period`, data = sttemporalP, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 9)
+cap_temppsP <- CAPdiscrim(disttempP~`Sampling Period`, data = sttemporalP, axes = 10, m = 0, mmax = 10, add = FALSE, permutations = 999)
 cap_temppsP <- add.spec.scores(cap_temppsP, dtempP, method = "cor.scores", multi = 1, Rscale = F, scaling = "1")
+saveRDS(cap_temppsP, file = "outputs/cap_temppsP.rds")
 round(cap_temppsP$F/sum(cap_temppsP$F), digits=3)
 barplot(cap_temppsP$F/sum(cap_temppsP$F))
 
@@ -2526,14 +2527,21 @@ ggplot(cap_temppsP_points) +
   theme_classic() +
   theme(strip.background = element_blank()) +
   geom_segment(data = cap_temppsP_arrows,
-               x = 0, y = 0, alpha = 0.3,
+               x = 0, y = 0, alpha = 0.6,
                mapping = aes(xend = LD1, yend = LD2),
-               arrow = arrow(length = unit(2, "mm"))) +
+               arrow = arrow(length = unit(3, "mm"))) +
   ggrepel::geom_text_repel(data = cap_temppsP_arrows, aes(x=LD1, y=LD2, label = variable), 
                            # colour = "#72177a", 
-                           size = 4
+                           size = 5
   ) +
   labs(
     x = "CAP Axis 1; 65.2%",
     y = "CAP Axis 2; 22.6%",
     shape = "Plot position")
+
+#### temporal trends ####
+#This needs to be a multi-panel figure(s) y = var, x = date, colour = plot position, thick lines and points = mean, hairlines = toposequences
+# 1) make a df with only vars of interest
+# 2) Make summary df with means by landscape position
+# 3) Plot individuals with feint lines, colours by landscape position
+# 4) Overlay points and thicker lines, colours by landscape position
