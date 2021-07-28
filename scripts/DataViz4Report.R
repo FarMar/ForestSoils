@@ -2568,7 +2568,7 @@ prot <- ggplot() +
   scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
   labs(
     x = "",
-    y = expression ("Proteolysis rate (mg AA-N"~kg^-1~h^-1~")"),
+    y = expression ("Proteolysis rate"),
     colour = "Plot position")
 
 moist <- ggplot() + 
@@ -2581,7 +2581,7 @@ moist <- ggplot() +
   scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
   labs(
     x = "",
-    y = expression ("Gravimetric moisture content (g "~g^-1~")"),
+    y = expression ("MC (g "~g^-1~")"),
     colour = "Plot position")
 
 faa <- ggplot() + 
@@ -2672,7 +2672,7 @@ aak1 <- ggplot() +
   scale_x_date(date_breaks = "3 months" , date_labels = "%b-%y") +
   labs(
     x = "",
-    y = expression ("Amino acid mineralisation rate ("~h^-1~")"),
+    y = expression ("AA min ("~h^-1~")"),
     colour = "Plot position")
 
 cue <- ggplot() + 
@@ -2791,3 +2791,10 @@ wet <- ggplot() +
     x = "",
     y = expression ("Wetness index"),
     colour = "Plot position")
+
+no3 + nh4 + faa + don + doc + availp + prot + aak1 + cue + moist +
+  plot_annotation(tag_levels = 'a') + 
+  theme(plot.tag.position = c(0, 1),
+        plot.tag = element_text(size = 16, hjust = 0, vjust = 1)) +
+  plot_layout(ncol = 2, guides = 'collect') & theme(legend.position = 'bottom')
+
