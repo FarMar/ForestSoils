@@ -2536,12 +2536,21 @@ ggplot(cap_temppsP_points) +
   ) +
   labs(
     x = "CAP Axis 1; 65.2%",
-    y = "CAP Axis 2; 22.6%",
+    y = "CAP Axis 2; 22.6%", 
     shape = "Plot position")
 
 #### temporal trends ####
 #This needs to be a multi-panel figure(s) y = var, x = date, colour = plot position, thick lines and points = mean, hairlines = toposequences
-# 1) make a df with only vars of interest
+# 1) TICK -make a df with only vars of interest
 # 2) Make summary df with means by landscape position
 # 3) Plot individuals with feint lines, colours by landscape position
 # 4) Overlay points and thicker lines, colours by landscape position
+
+seasonal <- temporalP %>% select(-c(VH, VV, pHc, EC, DTN, MBC)) 
+seasonal_vars <- c("Date", "Moisture", "FAA", "NO3", "DON", "NH4", "AvailP", "DOC", "NDVI", "Wet", "Proteolysis", "AAMin_k1", "Gp_Gn", "F_B", "TotalPLFA", "MBN", "MicCN", "Act_Gp", "MicY")
+
+seasonal_sum <- seasonal %>% 
+  group_by(`Sampling Period`, PlotPos) %>%
+  summarise(across(all_of(seasonal_vars),
+                   list(mean = ~ mean(.x, na.rm = TRUE))))
+  
