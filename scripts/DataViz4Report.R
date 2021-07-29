@@ -14,6 +14,7 @@ setwd("/Users/markfarrell/OneDrive - CSIRO/Data/ForestSoils")
 #### Packages ####
 install.packages("ggtern")
 install.packages("ggdist")
+install.packages("ggridges")
 
 
 library(tidyverse)
@@ -33,6 +34,7 @@ library(ape)
 library(RVAideMemoire)
 library(BiodiversityR)
 library(patchwork)
+library(ggridges) #masks a lot of ggdist
 
 #### Colours ####
 # No margin
@@ -1918,7 +1920,7 @@ iso <- ggplot(sum) +
     y = expression (paste(delta^{15}, "N (\u2030)")),
     colour = "Plot position")
 
-cn_c + cn_n + iso + vuln_c + vuln_n + guide_area() +
+cn_c + cn_n + iso + vuln_c + vuln_n + guide_area() 
   plot_layout(ncol = 3, guides = 'collect') +
   plot_annotation(tag_levels = 'a') & 
   theme(plot.tag.position = c(0, 1),
@@ -2798,3 +2800,23 @@ no3 + nh4 + faa + don + doc + availp + prot + aak1 + cue + moist +
         plot.tag = element_text(size = 16, hjust = 0, vjust = 1)) +
   plot_layout(ncol = 2, guides = 'collect') & theme(legend.position = 'bottom')
 
+ndvi + wet + miccn + mbn + totp + fb + gpgn + actgp +
+  plot_annotation(tag_levels = 'a') + 
+  theme(plot.tag.position = c(0, 1),
+        plot.tag = element_text(size = 16, hjust = 0, vjust = 1)) +
+  plot_layout(ncol = 2, guides = 'collect') & theme(legend.position = 'bottom')
+
+
+#### inflows ####
+inflow_raw <- read_csv("data/raw/KPinflows.csv")
+inflow_long <- inflow_raw %>% 
+  remove_empty() %>% 
+  pivot_longer(!Year, names_to = "Month", values_to = "Inflow") 
+str(inflow_long)
+
+inflow_long$Month <- match(inflow_long$Month, month.abb)
+
+ggplot(inflow_long, aes(x = Month, y = Year, height = Inflow, group = Year)) +
+  geom_ridgeline_grad +
+  theme_classic() +
+  theme(strip.background = element_blank())
