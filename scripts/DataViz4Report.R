@@ -15,6 +15,7 @@ setwd("/Users/markfarrell/OneDrive - CSIRO/Data/ForestSoils")
 install.packages("ggtern")
 install.packages("ggdist")
 install.packages("ggridges")
+install.packages("scales")
 
 
 library(tidyverse)
@@ -35,6 +36,7 @@ library(RVAideMemoire)
 library(BiodiversityR)
 library(patchwork)
 library(ggridges) #masks a lot of ggdist
+library(scales)
 
 #### Colours ####
 # No margin
@@ -2810,11 +2812,31 @@ ndvi + wet + miccn + mbn + totp + fb + gpgn + actgp +
 
 
 #### inflows ####
-inflow_raw <- read_csv("data/raw/KPinflows.csv")
-inflow_long <- inflow_raw %>% 
+inflow_raw <- read_csv("data/raw/KPinflows.csv") #read data
+inflow_raw$YearTemp = inflow_raw$Year #duplicate year column for onwards
+inflow_long <- inflow_raw %>% #put in long form and kill empty space
   remove_empty() %>% 
-  pivot_longer(!Year, names_to = "Month", values_to = "Inflow") 
+  pivot_longer(!c(Year, YearTemp), names_to = "Month", values_to = "Inflow") 
+inflow_long$Month <- gsub("^.{0,4}", "", inflow_long$Month) #Remove filler on date
+inflow_long$Month <- paste0(inflow_long$YearTemp,inflow_long$Month) #make full dates
+head(inflow_long$Month)
 
+inflow_long$Month <- as_date(inflow_long$Month) #format as date
+str(inflow_long)
+
+SplineFun <- splinefun(x = inflow_long$Month, y = inflow_long$Inflow) #splining function
+Dates <- seq.Date(ymd("1895-01-01"), ymd("2019-12-31"), by = 1) #Dates filling sequence
+SplineFit <- SplineFun(Dates) #apply spline to filling dates
+head(SplineFit)
+
+newDF <- data.frame(Dates = Dates, FitData = SplineFit) #glue vecs together
+head(newDF)
+str(newDF)
+newDF$year <- as.numeric(format(newDF$Date,'%Y')) #Pull year into new column
+newDF$Dates <- gsub("^.{0,4}", "2000", newDF$Dates) #Put dummy year into "month" so ridges plot aligned
+newDF$Dates <- as_date(newDF$Dates) #re-make date type
+
+#Needed for uninterpolated plot
 month_levels <- c(
   "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
   "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
@@ -2823,6 +2845,7 @@ month_levels <- c(
 inflow_long$Month <- factor(inflow_long$Month, levels = month_levels)
 str(inflow_long)
 
+#Colours from gradient picking at top of script
 inflow_col <- c("#F5E8C4",
                 "#B77A27",
                 "#E7D098",
@@ -2948,7 +2971,7 @@ inflow_col <- c("#F5E8C4",
                 "#C79141",
                 "#9A5E14",
                 "#5D3505")
-
+##without interpolation, will need tweaks as some feed-in code changed
 ggplot(inflow_long, aes(x = Month, y = Year, height = Inflow, group = Year, fill = as.factor(Year))) +
   geom_ridgeline(stat = "identity", alpha = 0.8, scale = 0.003, min_height = 1, size = 0.2, show.legend = FALSE) +
   theme_classic() +
@@ -2957,3 +2980,17 @@ ggplot(inflow_long, aes(x = Month, y = Year, height = Inflow, group = Year, fill
   theme(axis.line.y = element_blank(), axis.ticks.y = element_blank()) +
   scale_fill_manual(values = inflow_col)
 
+##with interpolation
+ggplot(newDF, aes(x = Dates, y = year, height = FitData, group = year, fill = as.factor(year))) +
+  geom_ridgeline(stat = "identity", alpha = 0.8, scale = 0.003, min_height = 10, size = 0.2, show.legend = FALSE) +
+  theme_classic() +
+  scale_y_reverse(breaks = c(1895, 1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2019), 
+                  minor_breaks = seq(1895, 2019, 5),
+                  expand = c(0,0), name = "", position = "right") +
+  scale_x_date(date_breaks = "1 month", minor_breaks = "1 week", labels=date_format("%b"), expand = c(0,0.1), name = "") +
+  theme(axis.line.y = element_blank(), 
+        axis.ticks.y = element_blank(), 
+        axis.text.x = element_text(hjust = -1.5), 
+        panel.grid.major.y = element_line(color = "black", size = 0.2, linetype = "dotted"),
+        panel.grid.minor.y = element_line(color = "black", size = 0.2, linetype = "dotted")) +
+  scale_fill_manual(values = inflow_col)
