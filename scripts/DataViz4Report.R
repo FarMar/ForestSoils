@@ -63,10 +63,12 @@ coul8 <- colorRampPalette(coul)(8)
 pie(rep(1, length(coul8)), col = coul8 , main="") 
 
 # Output the palettes for reference
-x<-list(coul8, coul11, coul17)
+x<-list(coul8, coul11, coul17, coul125)
 y<-tibble(column1= map_chr(x, str_flatten, " "))
 write_csv(y, "colours.csv")
 
+coul_inflow <- brewer.pal(11, "BrBG")
+coul125 <- colorRampPalette(coul_inflow)(125)
 
 #### data in ####
 sum <- read_csv("data/processed/summary.csv")
@@ -2812,11 +2814,146 @@ inflow_raw <- read_csv("data/raw/KPinflows.csv")
 inflow_long <- inflow_raw %>% 
   remove_empty() %>% 
   pivot_longer(!Year, names_to = "Month", values_to = "Inflow") 
+
+month_levels <- c(
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+)
+
+inflow_long$Month <- factor(inflow_long$Month, levels = month_levels)
 str(inflow_long)
 
-inflow_long$Month <- match(inflow_long$Month, month.abb)
+inflow_col <- c("#F5E8C4",
+                "#B77A27",
+                "#E7D098",
+                "#EDD9A9",
+                "#F1E0B4",
+                "#DBEEEB",
+                "#F5F1E8",
+                "#613706",
+                "#F5EBD0",
+                "#C8EAE5",
+                "#BDE6E0",
+                "#005349",
+                "#C28734",
+                "#C99748",
+                "#187C74",
+                "#CCEBE6",
+                "#B8E3DD",
+                "#F3E3B9",
+                "#CC9C4E",
+                "#663A06",
+                "#5AB2A8",
+                "#005046",
+                "#003F33",
+                "#036860",
+                "#A36619",
+                "#3C9C93",
+                "#298B83",
+                "#CFA154",
+                "#1C8078",
+                "#66BAB0",
+                "#EBD6A3",
+                "#9BD8CE",
+                "#DBBB75",
+                "#E2F0EE",
+                "#B37625",
+                "#F5F3F0",
+                "#004C42",
+                "#72C3B8",
+                "#E9F2F1",
+                "#90D3C9",
+                "#84CEC3",
+                "#CFECE8",
+                "#9E6216",
+                "#6A3D07",
+                "#005A51",
+                "#734207",
+                "#A76A1C",
+                "#42A097",
+                "#E0C481",
+                "#814A09",
+                "#D1A65B",
+                "#F5F5F5",
+                "#95D5CC",
+                "#DEC07B",
+                "#EDF3F2",
+                "#E6CD92",
+                "#60B6AC",
+                "#00463B",
+                "#20847C",
+                "#F5EACC",
+                "#00493E",
+                "#003C30",
+                "#C48C3B",
+                "#25877F",
+                "#BB7D2A",
+                "#0B7068",
+                "#AB6E1F",
+                "#F4E6BF",
+                "#F5F2EC",
+                "#076C64",
+                "#EFDCAE",
+                "#D7EDEA",
+                "#8E530B",
+                "#4EA99F",
+                "#F5EDD8",
+                "#7ECCC0",
+                "#A6DCD4",
+                "#92570E",
+                "#005D55",
+                "#004237",
+                "#00574D",
+                "#BF822E",
+                "#D6B168",
+                "#B2E1DA",
+                "#ACDFD7",
+                "#F5E9C8",
+                "#006158",
+                "#543005",
+                "#6CBFB4",
+                "#C3E8E3",
+                "#F5ECD4",
+                "#31938B",
+                "#F1F4F3",
+                "#D3EDE9",
+                "#36978F",
+                "#54ADA3",
+                "#A1DAD1",
+                "#147870",
+                "#00645C",
+                "#8A4F09",
+                "#78C7BC",
+                "#10746C",
+                "#965B11",
+                "#E9D39D",
+                "#D9B66E",
+                "#8AD1C6",
+                "#D4AB61",
+                "#784508",
+                "#F5F0E4",
+                "#E4CA8C",
+                "#F5EEDC",
+                "#583205",
+                "#854D09",
+                "#6F3F07",
+                "#AF7222",
+                "#48A49B",
+                "#DEEFED",
+                "#E6F1EF",
+                "#F5EFE0",
+                "#E2C787",
+                "#7C4708",
+                "#2D8F87",
+                "#C79141",
+                "#9A5E14",
+                "#5D3505")
 
-ggplot(inflow_long, aes(x = Month, y = Year, height = Inflow, group = Year)) +
-  geom_ridgeline_grad +
+ggplot(inflow_long, aes(x = Month, y = Year, height = Inflow, group = Year, fill = as.factor(Year))) +
+  geom_ridgeline(stat = "identity", alpha = 0.8, scale = 0.003, min_height = 1, size = 0.2, show.legend = FALSE) +
   theme_classic() +
-  theme(strip.background = element_blank())
+  scale_y_reverse(breaks = c(1895, 1900, 1910, 1920, 1930, 1940, 1950, 1960, 1970, 1980, 1990, 2000, 2010, 2019), expand = c(0,0), name = "", position = "right") +
+  scale_x_discrete(expand = c(0,0.1), name = "") +
+  theme(axis.line.y = element_blank(), axis.ticks.y = element_blank()) +
+  scale_fill_manual(values = inflow_col)
+
